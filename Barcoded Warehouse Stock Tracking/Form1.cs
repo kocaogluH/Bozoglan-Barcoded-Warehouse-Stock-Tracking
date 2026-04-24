@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -35,6 +36,10 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
         private Chart chartTopSellers;
 
+        private Guna2Panel _pnlSidebar;
+        private readonly List<Guna2Button> _navButtons = new List<Guna2Button>();
+        private Guna2Button _navReports;
+
         public Form1()
         {
             InitializeComponent();
@@ -59,7 +64,14 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
             SetupRoleAccess();
             InitializeDashboardCards();
+            SetupModernShell();
             InitializeContextMenu();
+
+            // Veritabanı değiştikçe tüm UI'ı yenile (Satış, İade vb.)
+            Database.DataChanged += () => {
+                if (this.InvokeRequired) this.Invoke(new Action(RefreshAll));
+                else RefreshAll();
+            };
 
             if (cmbType.Items.Count > 0)
                 cmbType.SelectedIndex = 0;
@@ -72,6 +84,11 @@ namespace Barcoded_Warehouse_Stock_Tracking
             btnReturns.Click += BtnReturns_Click;
             btnCustomers.Click += BtnCustomers_Click;
 
+            btnPos.Visible = false;
+            btnReturns.Visible = false;
+            btnCustomers.Visible = false;
+            btnReports.Visible = false;
+
             // Global Grid Styling
             StyleModernGrid(dgvProducts);
             StyleModernGrid(dgvMovements);
@@ -80,13 +97,13 @@ namespace Barcoded_Warehouse_Stock_Tracking
             var btnDeleteProduct = new Guna2Button
             {
                 Text = "🗑  Ürünü Sil",
-                Location = new Point(830, 18),
                 Size = new Size(200, 38),
-                BorderRadius = 8,
-                FillColor = Color.FromArgb(233, 69, 96),
+                BorderRadius = 10,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                FillColor = UiTheme.Danger,
                 Font = new System.Drawing.Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.White,
-                HoverState = { FillColor = Color.FromArgb(200, 50, 75) }
+                HoverState = { FillColor = ControlPaint.Dark(UiTheme.Danger, 0.08f) }
             };
             btnDeleteProduct.Click += (s, ev) =>
             {
@@ -113,23 +130,249 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 }
             };
             tabProducts.Controls.Add(btnDeleteProduct);
+            void placeDeleteBtn(object __, EventArgs ___) =>
+                btnDeleteProduct.Left = tabProducts.ClientSize.Width - btnDeleteProduct.Width - 18;
+            tabProducts.Resize += placeDeleteBtn;
+            placeDeleteBtn(null, null);
+
+            ApplyLightChromeToDataTabs();
 
             RefreshAll();
         }
 
+        private void ApplyLightChromeToDataTabs()
+        {
+            tabProducts.BackColor = UiTheme.MainBackground;
+            tabMovements.BackColor = UiTheme.MainBackground;
+
+            foreach (var tb in new[] { txtBarcode, txtName, txtPrice })
+            {
+                tb.FillColor = UiTheme.InputFill;
+                tb.ForeColor = UiTheme.TextPrimary;
+                tb.BorderColor = UiTheme.InputBorder;
+                tb.PlaceholderForeColor = UiTheme.TextMuted;
+            }
+            lblBarcode.ForeColor = lblName.ForeColor = lblPrice.ForeColor = UiTheme.TextMuted;
+            btnAdd.FillColor = UiTheme.Success;
+            btnAdd.HoverState.FillColor = ControlPaint.Dark(UiTheme.Success, 0.08f);
+
+            txtBarcodeMovement.FillColor = UiTheme.InputFill;
+            txtBarcodeMovement.ForeColor = UiTheme.TextPrimary;
+            txtBarcodeMovement.BorderColor = UiTheme.InputBorder;
+            txtBarcodeMovement.PlaceholderForeColor = UiTheme.TextMuted;
+
+            cmbType.FillColor = UiTheme.InputFill;
+            cmbType.ForeColor = UiTheme.TextPrimary;
+            cmbType.BorderColor = UiTheme.InputBorder;
+
+            nudQuantity.BackColor = UiTheme.InputFill;
+            nudQuantity.ForeColor = UiTheme.TextPrimary;
+            lblBarcodeMovement.ForeColor = lblQuantity.ForeColor = lblType.ForeColor = UiTheme.TextMuted;
+            btnAddMovement.FillColor = UiTheme.Success;
+            btnAddMovement.HoverState.FillColor = ControlPaint.Dark(UiTheme.Success, 0.08f);
+        }
+
+        private void SetupModernShell()
+        {
+            BackColor = UiTheme.MainBackground;
+            Text = "Poseidon — Depo & Stok";
+
+            var pnlFill = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = UiTheme.MainBackground
+            };
+            Controls.Remove(tabControl);
+            tabControl.Dock = DockStyle.Fill;
+            tabControl.Margin = new Padding(0);
+            tabControl.Appearance = TabAppearance.FlatButtons;
+            tabControl.SizeMode = TabSizeMode.Fixed;
+            tabControl.ItemSize = new Size(0, 1);
+            tabControl.Multiline = true;
+            pnlFill.Controls.Add(tabControl);
+
+            _pnlSidebar = new Guna2Panel
+            {
+                Dock = DockStyle.Left,
+                Width = 236,
+                FillColor = UiTheme.Sidebar,
+                BorderRadius = 0
+            };
+
+            var lblHead = new Label
+            {
+                Text = "Yönetim Paneli",
+                ForeColor = Color.FromArgb(210, 200, 245),
+                Font = new System.Drawing.Font("Segoe UI", 8.5f),
+                AutoSize = true,
+                Location = new Point(20, 18),
+                BackColor = Color.Transparent
+            };
+            _pnlSidebar.Controls.Add(lblHead);
+
+            int y = 52;
+            Guna2Button nav(string caption, Action act, bool transientAction = false)
+            {
+                var b = new Guna2Button
+                {
+                    Text = caption,
+                    Location = new Point(12, y),
+                    Size = new Size(212, 44),
+                    BorderRadius = 12,
+                    FillColor = UiTheme.Sidebar, // Match sidebar color exactly
+                    ForeColor = Color.White,
+                    Font = new System.Drawing.Font("Segoe UI", 10f, FontStyle.Bold),
+                    TextAlign = HorizontalAlignment.Left,
+                    TextOffset = new Point(14, 0),
+                    Cursor = Cursors.Hand,
+                    BorderThickness = 0, // Ensure no borders
+                    BackColor = Color.Transparent,
+                    UseTransparentBackground = true,
+                    Animated = true
+                };
+                b.HoverState.FillColor = UiTheme.SidebarHover;
+                b.HoverState.ForeColor = Color.White;
+                b.Click += (_, __) =>
+                {
+                    if (!transientAction)
+                        SetNavActive(b);
+                    act();
+                    if (transientAction && _navButtons.Count > 0)
+                    {
+                        tabControl.SelectedIndex = 0;
+                        SetNavActive(_navButtons[0]);
+                    }
+                };
+                _pnlSidebar.Controls.Add(b);
+                _navButtons.Add(b);
+                y += 48;
+                return b;
+            }
+
+            nav("  🏠  Özet", () => { tabControl.SelectedIndex = 0; });
+            nav("  🛒  Satış / POS", () => { OpenChildPage("Satış / POS", new FrmPos()); });
+            nav("  ↩  İade / İptal", () => { OpenChildPage("İade / İptal", new FrmReturns()); });
+            nav("  📦  Ürünler", () => { tabControl.SelectedIndex = 1; });
+            nav("  📋  Stok Hareketleri", () => { tabControl.SelectedIndex = 2; });
+            nav("  👤  Müşteriler", () => { OpenChildPage("Müşteriler", new FrmCustomers()); });
+            _navReports = nav("  📊  Raporlar", () => { OpenChildPage("Raporlar", new FrmReports()); });
+            nav("  ⚙  Ayarlar", () =>
+            {
+                MessageBox.Show("Ayarlar ekranı yakında eklenecek.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            });
+
+            var lblFoot = new Label
+            {
+                Text = Session.Username ?? "",
+                ForeColor = Color.FromArgb(190, 180, 230),
+                Font = new System.Drawing.Font("Segoe UI", 8f),
+                AutoSize = false,
+                Size = new Size(212, 36),
+                Location = new Point(12, _pnlSidebar.Height - 48),
+                TextAlign = ContentAlignment.BottomLeft,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+                BackColor = Color.Transparent
+            };
+            _pnlSidebar.Controls.Add(lblFoot);
+            _pnlSidebar.Resize += (_, __) => lblFoot.Top = _pnlSidebar.ClientSize.Height - lblFoot.Height - 12;
+
+            Controls.Add(pnlFill);
+            Controls.Add(_pnlSidebar);
+
+            if (_navButtons.Count > 0)
+                SetNavActive(_navButtons[0]);
+
+            if (_navReports != null)
+                _navReports.Enabled = Session.IsAdmin;
+
+            tabControl.SelectedIndexChanged += (_, __) =>
+            {
+                if (_navButtons == null || _navButtons.Count < 5) return;
+                int i = tabControl.SelectedIndex;
+                if (i == 0) SetNavActive(_navButtons[0]);
+                else if (i == 1) SetNavActive(_navButtons[3]);
+                else if (i == 2) SetNavActive(_navButtons[4]);
+            };
+        }
+
+        private void SetNavActive(Guna2Button btn)
+        {
+            foreach (var b in _navButtons)
+            {
+                b.FillColor = UiTheme.Sidebar;
+                b.ForeColor = Color.White;
+            }
+            if (btn != null)
+            {
+                btn.FillColor = UiTheme.SidebarSelected;
+                btn.ForeColor = Color.White;
+            }
+        }
+
+        private void OpenChildPage(string title, Form childForm)
+        {
+            // Eğer admin değilse ve raporlara erişmeye çalışıyorsa engelle
+            if (title == "Raporlar" && !Session.IsAdmin)
+            {
+                MessageBox.Show("Bu işlem için yetkiniz yok.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Önce bu formun daha önce açılıp açılmadığını kontrol et
+            foreach (TabPage tp in tabControl.TabPages)
+            {
+                if (tp.Text == title)
+                {
+                    tabControl.SelectedTab = tp;
+                    return;
+                }
+            }
+
+            // Yeni bir TabPage oluştur
+            var newTab = new TabPage(title) { BackColor = UiTheme.MainBackground };
+            
+            childForm.TopLevel = false;
+            childForm.FormBorderStyle = FormBorderStyle.None;
+            childForm.Dock = DockStyle.Fill;
+            
+            newTab.Controls.Add(childForm);
+            tabControl.TabPages.Add(newTab);
+            tabControl.SelectedTab = newTab;
+            
+            childForm.Show();
+            
+            // Form kapandığında (eğer form içinde Close() çağrılırsa) tab'ı da kapatabiliriz
+            childForm.FormClosed += (s, e) => {
+                tabControl.TabPages.Remove(newTab);
+                RefreshAll();
+            };
+        }
+
         private void StyleModernGrid(DataGridView g)
         {
-            g.RowTemplate.Height = 35; // Daha yüksek satırlar (Padding hissi)
+            g.BackgroundColor = UiTheme.Surface;
+            g.BorderStyle = BorderStyle.None;
+            g.RowTemplate.Height = 36;
             g.AllowUserToResizeRows = false;
             g.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            g.GridColor = Color.FromArgb(40, 55, 90);
-            
+            g.GridColor = UiTheme.GridLine;
+
+            g.EnableHeadersVisualStyles = false;
             g.ColumnHeadersHeight = 40;
-            g.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10, FontStyle.Bold);
-            g.ColumnHeadersDefaultCellStyle.SelectionBackColor = g.ColumnHeadersDefaultCellStyle.BackColor;
-            
-            g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(60, 80, 140);
-            g.DefaultCellStyle.SelectionForeColor = Color.White;
+            g.ColumnHeadersDefaultCellStyle.BackColor = UiTheme.GridHeaderBg;
+            g.ColumnHeadersDefaultCellStyle.ForeColor = UiTheme.Primary;
+            g.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9.5f, FontStyle.Bold);
+            g.ColumnHeadersDefaultCellStyle.SelectionBackColor = UiTheme.GridHeaderBg;
+            g.ColumnHeadersDefaultCellStyle.SelectionForeColor = UiTheme.Primary;
+
+            g.DefaultCellStyle.BackColor = UiTheme.Surface;
+            g.DefaultCellStyle.ForeColor = UiTheme.TextPrimary;
+            g.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10f);
+            g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(224, 242, 254); // Light Sapphire Selection
+            g.DefaultCellStyle.SelectionForeColor = UiTheme.TextPrimary;
+
+            g.AlternatingRowsDefaultCellStyle.BackColor = UiTheme.GridRowAlt;
+            g.AlternatingRowsDefaultCellStyle.ForeColor = UiTheme.TextPrimary;
         }
 
         private void SetupRoleAccess()
@@ -143,79 +386,121 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
         private void InitializeDashboardCards()
         {
-            pnlTotalProducts  = CreateCard("📦 Toplam Ürün",    System.Drawing.Color.FromArgb(52, 152, 219),   20, 20, out lblTotalProductsVal);
-            pnlDailySales     = CreateCard("💰 Bugünkü Satış",  System.Drawing.Color.FromArgb(46, 204, 113),   240, 20, out lblDailySalesVal);
-            pnlLowStock       = CreateCard("⚠ Kritik Stok (<5)",System.Drawing.Color.FromArgb(233, 69, 96),    460, 20, out lblLowStockVal);
-            pnlPendingBalance = CreateCard("📋 Toplam Alacak",   System.Drawing.Color.FromArgb(230, 126, 34),   680, 20, out lblPendingBalanceVal);
+            pnlTotalProducts  = CreateCard("📦 Toplam Ürün", UiTheme.CardBlue, UiTheme.TextMuted, UiTheme.Primary, 20, 20, out lblTotalProductsVal);
+            pnlDailySales     = CreateCard("💰 Bugünkü Satış", UiTheme.SuccessSoft, UiTheme.TextMuted, UiTheme.Success, 240, 20, out lblDailySalesVal);
+            pnlLowStock       = CreateCard("⚠ Kritik Stok (<5)", UiTheme.DangerSoft, UiTheme.TextMuted, UiTheme.Danger, 460, 20, out lblLowStockVal);
+            pnlPendingBalance = CreateCard("📋 Toplam Alacak", Color.FromArgb(255, 247, 237), UiTheme.TextMuted, UiTheme.Warning, 680, 20, out lblPendingBalanceVal);
 
             // ── TOP SELLERS CHART ────────────────────────────────────────────────
             chartTopSellers = new Chart
             {
-                Location = new Point(20, 150),
-                Size = new Size(860, 360),
-                BackColor = System.Drawing.Color.FromArgb(26, 26, 46)
+                BackColor = UiTheme.Surface,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(10, 20, 10, 10)
             };
 
-            var area = new ChartArea("MainArea") { BackColor = Color.Transparent };
-            area.AxisX.LabelStyle.ForeColor = Color.White;
-            area.AxisY.LabelStyle.ForeColor = Color.White;
-            area.AxisX.MajorGrid.LineColor = Color.FromArgb(40, 55, 90);
-            area.AxisY.MajorGrid.LineColor = Color.FromArgb(40, 55, 90);
+            var area = new ChartArea("MainArea") { BackColor = Color.FromArgb(248, 249, 252) };
+            area.AxisX.LabelStyle.ForeColor = UiTheme.TextPrimary;
+            area.AxisY.LabelStyle.ForeColor = UiTheme.TextMuted;
+            area.AxisX.MajorGrid.LineColor = UiTheme.GridLine;
+            area.AxisY.MajorGrid.LineColor = UiTheme.GridLine;
             chartTopSellers.ChartAreas.Add(area);
 
             var series = new Series("Sales")
             {
-                ChartType = SeriesChartType.Column,
+                ChartType = SeriesChartType.Bar, // Horizontal looks more elegant
                 IsValueShownAsLabel = true,
-                LabelForeColor = Color.White,
-                Font = new System.Drawing.Font("Segoe UI", 9, FontStyle.Bold),
-                Palette = ChartColorPalette.Pastel
+                LabelForeColor = UiTheme.TextMuted,
+                Font = new System.Drawing.Font("Segoe UI", 9, FontStyle.Regular),
+                Palette = ChartColorPalette.None,
+                Color = UiTheme.Primary,
+                ["BarLabelStyle"] = "Outside"
             };
             chartTopSellers.Series.Add(series);
 
-            var title = new Title("🔥 En Çok Satan 5 Ürün", Docking.Top, new System.Drawing.Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(233, 69, 96));
+            // Sleek Axis Styling
+            area.AxisX.MajorGrid.Enabled = false;
+            area.AxisY.MajorGrid.LineColor = Color.FromArgb(230, 230, 230);
+            area.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 9);
+            area.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 9);
+            area.AxisX.LineColor = Color.Transparent;
+            area.AxisY.LineColor = Color.Transparent;
+
+            var title = new Title("🔥 En Çok Satan 5 Ürün", Docking.Top, new System.Drawing.Font("Segoe UI", 14, FontStyle.Bold), UiTheme.Primary);
             chartTopSellers.Titles.Add(title);
 
+            // ── RESPONSIVE LAYOUT ENGINE ─────────────────────────────────────────
+            var mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = Color.Transparent,
+                Padding = new Padding(10)
+            };
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 140)); // Fixed height for cards
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // Chart fills remaining
+
+            var cardLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 4,
+                RowCount = 1,
+                BackColor = Color.Transparent
+            };
+            for (int i = 0; i < 4; i++) cardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25f));
+
+            // Adjust card sizes for fluid layout
+            foreach (var p in new[] { pnlTotalProducts, pnlDailySales, pnlLowStock, pnlPendingBalance })
+            {
+                p.Dock = DockStyle.Fill;
+                p.Margin = new Padding(10);
+            }
+
+            cardLayout.Controls.Add(pnlTotalProducts, 0, 0);
+            cardLayout.Controls.Add(pnlDailySales, 1, 0);
+            cardLayout.Controls.Add(pnlLowStock, 2, 0);
+            cardLayout.Controls.Add(pnlPendingBalance, 3, 0);
+
+            mainLayout.Controls.Add(cardLayout, 0, 0);
+            mainLayout.Controls.Add(chartTopSellers, 0, 1);
+
             var dashTab = new TabPage("🏠  Dashboard");
-            dashTab.BackColor = System.Drawing.Color.FromArgb(26, 26, 46);
-            dashTab.Controls.Add(pnlTotalProducts);
-            dashTab.Controls.Add(pnlDailySales);
-            dashTab.Controls.Add(pnlLowStock);
-            dashTab.Controls.Add(pnlPendingBalance);
-            dashTab.Controls.Add(chartTopSellers);
+            dashTab.BackColor = UiTheme.MainBackground;
+            dashTab.Controls.Add(mainLayout);
 
             tabControl.TabPages.Insert(0, dashTab);
             tabControl.SelectedIndex = 0;
         }
 
-        private Guna.UI2.WinForms.Guna2Panel CreateCard(string title, Color bg, int x, int y, out Label valLabel)
+        private Guna.UI2.WinForms.Guna2Panel CreateCard(string title, Color bg, Color titleColor, Color valueColor, int x, int y, out Label valLabel)
         {
             var pnl = new Guna.UI2.WinForms.Guna2Panel
             {
                 Location = new Point(x, y),
                 Size = new Size(200, 110),
-                BorderRadius = 16,
+                BorderRadius = 20,
                 FillColor = bg,
-                ShadowDecoration = { Enabled = true, Color = bg, Depth = 10 }
+                ShadowDecoration = { Enabled = true, Color = Color.FromArgb(30, UiTheme.Primary.R, UiTheme.Primary.G, UiTheme.Primary.B), Depth = 12, BorderRadius = 20 }
             };
 
             var lblTitle = new Label
             {
                 Text = title,
-                ForeColor = Color.White,
+                ForeColor = titleColor,
                 BackColor = Color.Transparent,
-                Font = new System.Drawing.Font("Segoe UI", 10, FontStyle.Bold),
-                Location = new Point(15, 12),
+                Font = new System.Drawing.Font("Segoe UI", 9.5f, FontStyle.Bold),
+                Location = new Point(14, 12),
                 AutoSize = true
             };
 
             valLabel = new Label
             {
                 Text = "0",
-                ForeColor = Color.White,
+                ForeColor = valueColor,
                 BackColor = Color.Transparent,
-                Font = new System.Drawing.Font("Segoe UI", 26, FontStyle.Bold),
-                Location = new Point(15, 48),
+                Font = new System.Drawing.Font("Segoe UI", 22, FontStyle.Bold),
+                Location = new Point(14, 44),
                 AutoSize = true
             };
 
@@ -292,14 +577,18 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 int stock = Convert.ToInt32(dgvProducts.Rows[e.RowIndex].Cells["Stok"].Value);
                 if (stock < 5)
                 {
-                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(233, 69, 96);
-                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.White;
-                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.SelectionBackColor = Color.FromArgb(200, 50, 75);
+                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.BackColor = UiTheme.DangerSoft;
+                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.ForeColor = UiTheme.Danger;
+                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.SelectionBackColor = Color.FromArgb(224, 242, 254);
+                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.SelectionForeColor = UiTheme.TextPrimary;
                 }
                 else
                 {
-                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(22, 33, 62);
-                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(234, 234, 234);
+                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.BackColor =
+                        e.RowIndex % 2 == 0 ? UiTheme.Surface : UiTheme.GridRowAlt;
+                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.ForeColor = UiTheme.TextPrimary;
+                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.SelectionBackColor = UiTheme.CardLavender;
+                    dgvProducts.Rows[e.RowIndex].DefaultCellStyle.SelectionForeColor = UiTheme.TextPrimary;
                 }
             }
         }
@@ -366,7 +655,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 foreach (DataRow row in dt.Rows)
                 {
                     int index = chartTopSellers.Series["Sales"].Points.AddXY(row["Name"], row["TotalQty"]);
-                    chartTopSellers.Series["Sales"].Points[index].Color = Color.FromArgb(52, 152, 219); // Accent Blue
+                    chartTopSellers.Series["Sales"].Points[index].Color = UiTheme.Primary;
                 }
             }
         }
@@ -488,31 +777,9 @@ namespace Barcoded_Warehouse_Stock_Tracking
             txtBarcodeMovement.Focus();
         }
 
-        private void BtnPos_Click(object sender, EventArgs e)
-        {
-            new FrmPos().ShowDialog();
-            RefreshAll();
-        }
-
-        private void BtnReturns_Click(object sender, EventArgs e)
-        {
-            new FrmReturns().ShowDialog();
-            RefreshAll();
-        }
-
-        private void BtnCustomers_Click(object sender, EventArgs e)
-        {
-            new FrmCustomers().Show();
-        }
-
-        private void BtnReports_Click(object sender, EventArgs e)
-        {
-            if (!Session.IsAdmin)
-            {
-                MessageBox.Show("Bu işlem için yetkiniz yok.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            new FrmReports().ShowDialog();
-        }
+        private void BtnPos_Click(object sender, EventArgs e) => OpenChildPage("Satış / POS", new FrmPos());
+        private void BtnReturns_Click(object sender, EventArgs e) => OpenChildPage("İade / İptal", new FrmReturns());
+        private void BtnCustomers_Click(object sender, EventArgs e) => OpenChildPage("Müşteriler", new FrmCustomers());
+        private void BtnReports_Click(object sender, EventArgs e) => OpenChildPage("Raporlar", new FrmReports());
     }
 }

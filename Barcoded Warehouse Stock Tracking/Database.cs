@@ -9,6 +9,9 @@ namespace Barcoded_Warehouse_Stock_Tracking
 {
     public static class Database
     {
+        public static event Action DataChanged; // Global event for data updates
+        private static void NotifyDataChanged() => DataChanged?.Invoke();
+
         private static readonly string ConnectionString = GetConnectionString();
 
         private static string GetConnectionString()
@@ -261,6 +264,7 @@ CREATE TABLE IF NOT EXISTS SaleReturnItems (
                 conn.Open();
                 cmd.ExecuteNonQuery();
             }
+            NotifyDataChanged();
         }
 
         public static bool ProductExists(string barcode)
@@ -537,6 +541,7 @@ VALUES(@pid, @b, @q, 'Çıkış', 'Sale', 'Sale', @rid, @dt, @uid);";
                         }
                     }
                     tx.Commit();
+                    NotifyDataChanged();
                     return saleId;
                 }
             }
@@ -592,6 +597,7 @@ VALUES(@pid, @b, @q, 'Çıkış', 'Sale', 'Sale', @rid, @dt, @uid);";
                 conn.Open();
                 cmd.ExecuteNonQuery();
             }
+            NotifyDataChanged();
         }
 
         public static void DeleteProduct(string barcode)
@@ -604,6 +610,7 @@ VALUES(@pid, @b, @q, 'Çıkış', 'Sale', 'Sale', @rid, @dt, @uid);";
                 conn.Open();
                 cmd.ExecuteNonQuery();
             }
+            NotifyDataChanged();
         }
 
         public static long InsertCustomer(string name, string phone, string email)
@@ -620,7 +627,9 @@ SELECT last_insert_rowid();";
                 cmd.Parameters.AddWithValue("@p", string.IsNullOrWhiteSpace(phone) ? (object)DBNull.Value : phone);
                 cmd.Parameters.AddWithValue("@e", string.IsNullOrWhiteSpace(email) ? (object)DBNull.Value : email);
                 cmd.Parameters.AddWithValue("@dt", DateTime.Now.ToString("s", CultureInfo.InvariantCulture));
-                return (long)(cmd.ExecuteScalar() ?? 0L);
+                long id = (long)(cmd.ExecuteScalar() ?? 0L);
+                NotifyDataChanged();
+                return id;
             }
         }
 
@@ -839,6 +848,7 @@ WHERE Id = @sid;";
                     }
 
                     tx.Commit();
+                    NotifyDataChanged();
                     return returnId;
                 }
             }

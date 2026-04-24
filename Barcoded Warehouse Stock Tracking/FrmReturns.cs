@@ -8,14 +8,14 @@ namespace Barcoded_Warehouse_Stock_Tracking
 {
     public class FrmReturns : Form
     {
-        private static readonly Color BgDark = Color.FromArgb(26, 26, 46);
-        private static readonly Color BgMid = Color.FromArgb(22, 33, 62);
-        private static readonly Color BgInput = Color.FromArgb(35, 45, 78);
-        private static readonly Color Accent = Color.FromArgb(233, 69, 96);
-        private static readonly Color AccentBlu = Color.FromArgb(52, 152, 219);
-        private static readonly Color AccentOrg = Color.FromArgb(230, 126, 34);
-        private static readonly Color TextMain = Color.FromArgb(234, 234, 234);
-        private static readonly Color TextDim = Color.FromArgb(140, 140, 160);
+        private static readonly Color BgDark = UiTheme.MainBackground;
+        private static readonly Color BgMid = UiTheme.Surface;
+        private static readonly Color BgInput = UiTheme.InputFill;
+        private static readonly Color Accent = UiTheme.Primary;
+        private static readonly Color AccentBlu = UiTheme.PrimaryDark;
+        private static readonly Color AccentOrg = UiTheme.Warning;
+        private static readonly Color TextMain = UiTheme.TextPrimary;
+        private static readonly Color TextDim = UiTheme.TextMuted;
 
         private readonly Guna2TextBox _txtSaleNo = new Guna2TextBox();
         private readonly Guna2Button _btnLoad = new Guna2Button();
@@ -32,7 +32,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             DoubleBuffered = true;
 
             // ── TOP PANEL (Search) ──────────────────────────────────────────────
-            var top = new Panel { Dock = DockStyle.Top, Height = 140, BackColor = BgMid, Padding = new Padding(20) };
+            var top = new Panel { Dock = DockStyle.Top, Height = 140, BackColor = UiTheme.Surface, Padding = new Padding(20) };
 
             var lblHead = new Label
             {
@@ -47,14 +47,15 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _txtSaleNo.Width = 320; _txtSaleNo.Height = 38;
             _txtSaleNo.PlaceholderText = "🔍 Fiş No Yazın...";
             _txtSaleNo.BorderRadius = 8; _txtSaleNo.Font = new Font("Segoe UI", 10);
-            _txtSaleNo.FillColor = BgInput; _txtSaleNo.BorderColor = AccentBlu;
+            _txtSaleNo.FillColor = BgInput; _txtSaleNo.BorderColor = UiTheme.InputBorder;
             _txtSaleNo.ForeColor = TextMain; _txtSaleNo.PlaceholderForeColor = TextDim;
             _txtSaleNo.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; LoadSale(); } };
 
             _btnLoad.Text = "SATIŞI BUL";
             _btnLoad.Location = new Point(355, 88); _btnLoad.Size = new Size(130, 38);
             _btnLoad.BorderRadius = 8; _btnLoad.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            _btnLoad.FillColor = AccentBlu; _btnLoad.ForeColor = Color.White;
+            _btnLoad.FillColor = UiTheme.Primary; _btnLoad.ForeColor = Color.White;
+            _btnLoad.HoverState.FillColor = UiTheme.PrimaryDark;
             _btnLoad.Click += (_, __) => LoadSale();
 
             top.Controls.Add(lblHead);
@@ -66,19 +67,19 @@ namespace Barcoded_Warehouse_Stock_Tracking
             var center = new Panel { Dock = DockStyle.Fill, BackColor = BgDark, Padding = new Padding(15) };
             _grid.Dock = DockStyle.Fill;
             _grid.AllowUserToAddRows = false;
-            _grid.Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Dark;
-            _grid.ThemeStyle.BackColor = BgMid;
-            _grid.ThemeStyle.GridColor = Color.FromArgb(40, 55, 90);
+            _grid.Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default;
+            _grid.ThemeStyle.BackColor = UiTheme.Surface;
+            _grid.ThemeStyle.GridColor = UiTheme.GridLine;
 
-            _grid.ThemeStyle.HeaderStyle.BackColor = Color.FromArgb(22, 33, 62);
+            _grid.ThemeStyle.HeaderStyle.BackColor = UiTheme.GridHeaderBg;
             _grid.ThemeStyle.HeaderStyle.ForeColor = Accent;
             _grid.ThemeStyle.HeaderStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
-            _grid.ThemeStyle.RowsStyle.BackColor = BgMid;
+            _grid.ThemeStyle.RowsStyle.BackColor = UiTheme.Surface;
             _grid.ThemeStyle.RowsStyle.ForeColor = TextMain;
             _grid.ThemeStyle.RowsStyle.Font = new Font("Segoe UI", 9);
-            _grid.ThemeStyle.RowsStyle.SelectionBackColor = Color.FromArgb(60, 80, 140);
-            _grid.ThemeStyle.RowsStyle.SelectionForeColor = Color.White;
+            _grid.ThemeStyle.RowsStyle.SelectionBackColor = Color.FromArgb(224, 242, 254);
+            _grid.ThemeStyle.RowsStyle.SelectionForeColor = TextMain;
 
             _grid.BorderStyle = BorderStyle.None;
             _grid.RowHeadersVisible = false;
@@ -99,7 +100,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             center.Controls.Add(_grid);
 
             // ── BOTTOM PANEL (Action) ──────────────────────────────────────────
-            var bottom = new Panel { Dock = DockStyle.Bottom, Height = 90, BackColor = BgMid, Padding = new Padding(20) };
+            var bottom = new Panel { Dock = DockStyle.Bottom, Height = 90, BackColor = UiTheme.Surface, Padding = new Padding(20) };
 
             var info = new Label
             {

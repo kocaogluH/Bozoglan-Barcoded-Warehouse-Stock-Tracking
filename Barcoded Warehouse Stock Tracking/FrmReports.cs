@@ -9,14 +9,14 @@ namespace Barcoded_Warehouse_Stock_Tracking
 {
     public class FrmReports : Form
     {
-        private static readonly Color BgDark = Color.FromArgb(26, 26, 46);
-        private static readonly Color BgMid = Color.FromArgb(22, 33, 62);
-        private static readonly Color BgInput = Color.FromArgb(35, 45, 78);
-        private static readonly Color Accent = Color.FromArgb(233, 69, 96);
-        private static readonly Color AccentBlu = Color.FromArgb(52, 152, 219);
-        private static readonly Color AccentGrn = Color.FromArgb(46, 204, 113);
-        private static readonly Color TextMain = Color.FromArgb(234, 234, 234);
-        private static readonly Color TextDim = Color.FromArgb(140, 140, 160);
+        private static readonly Color BgDark = UiTheme.MainBackground;
+        private static readonly Color BgMid = UiTheme.Surface;
+        private static readonly Color BgInput = UiTheme.InputFill;
+        private static readonly Color Accent = UiTheme.Primary;
+        private static readonly Color AccentBlu = UiTheme.PrimaryDark;
+        private static readonly Color AccentGrn = UiTheme.Success;
+        private static readonly Color TextMain = UiTheme.TextPrimary;
+        private static readonly Color TextDim = UiTheme.TextMuted;
 
         private readonly TabControl _tabs = new TabControl();
         private readonly DateTimePicker _dtFrom = new DateTimePicker();
@@ -32,7 +32,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
         private readonly Guna2Button _btnBackup = new Guna2Button();
 
         // ── Grid stilini uygula ────────────────────────────────────────────────
-        private static void StyleGrid(Guna2DataGridView g, Color bg, Color accent)
+        private static void StyleGrid(Guna2DataGridView g, Color _, Color accent)
         {
             g.AllowUserToAddRows = false;
             g.ReadOnly = true;
@@ -40,25 +40,24 @@ namespace Barcoded_Warehouse_Stock_Tracking
             g.AutoGenerateColumns = true;
             g.Dock = DockStyle.Fill;
             g.BorderStyle = BorderStyle.None;
-            g.BackgroundColor = bg;
-            g.GridColor = Color.FromArgb(40, 55, 90);
+            g.BackgroundColor = UiTheme.Surface;
+            g.GridColor = UiTheme.GridLine;
 
-            // ── Guna Modern Temalandırma ──────────────────────────────────
-            g.Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Dark;
-            g.ThemeStyle.BackColor = bg;
-            g.ThemeStyle.GridColor = Color.FromArgb(40, 55, 90);
+            g.Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default;
+            g.ThemeStyle.BackColor = UiTheme.Surface;
+            g.ThemeStyle.GridColor = UiTheme.GridLine;
             
-            g.ThemeStyle.HeaderStyle.BackColor = Color.FromArgb(30, 40, 70);
+            g.ThemeStyle.HeaderStyle.BackColor = UiTheme.GridHeaderBg;
             g.ThemeStyle.HeaderStyle.ForeColor = accent;
             g.ThemeStyle.HeaderStyle.Font = new Font("Segoe UI", 11, FontStyle.Bold);
             
-            g.ThemeStyle.RowsStyle.BackColor = bg;
+            g.ThemeStyle.RowsStyle.BackColor = UiTheme.Surface;
             g.ThemeStyle.RowsStyle.ForeColor = TextMain;
             g.ThemeStyle.RowsStyle.Font = new Font("Segoe UI", 10);
-            g.ThemeStyle.RowsStyle.SelectionBackColor = Color.FromArgb(60, 80, 140);
-            g.ThemeStyle.RowsStyle.SelectionForeColor = Color.White;
+            g.ThemeStyle.RowsStyle.SelectionBackColor = Color.FromArgb(224, 242, 254);
+            g.ThemeStyle.RowsStyle.SelectionForeColor = UiTheme.TextPrimary;
 
-            g.ThemeStyle.AlternatingRowsStyle.BackColor = Color.FromArgb(30, 35, 55);
+            g.ThemeStyle.AlternatingRowsStyle.BackColor = UiTheme.GridRowAlt;
             g.ThemeStyle.AlternatingRowsStyle.ForeColor = TextMain;
 
             // ── Satır & Başlık Boyutları ────────────────────────────────────
@@ -105,7 +104,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _dtFrom.Location = new Point(15, 30);
             _dtFrom.Width = 130;
             _dtFrom.CalendarForeColor = TextMain;
-            _dtFrom.CalendarMonthBackground = BgMid;
+            _dtFrom.CalendarMonthBackground = UiTheme.Surface;
             _dtFrom.Font = new Font("Segoe UI", 10);
 
             _dtTo.Format = DateTimePickerFormat.Short;
@@ -120,9 +119,9 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _btnRefreshSales.Size = new Size(220, 42);
             _btnRefreshSales.BorderRadius = 8;
             _btnRefreshSales.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            _btnRefreshSales.FillColor = AccentBlu;
+            _btnRefreshSales.FillColor = UiTheme.Primary;
             _btnRefreshSales.ForeColor = Color.White;
-            _btnRefreshSales.HoverState.FillColor = ControlPaint.Dark(AccentBlu, 0.1f);
+            _btnRefreshSales.HoverState.FillColor = UiTheme.PrimaryDark;
             _btnRefreshSales.Click += (_, __) => RefreshSales();
 
             // VERİTABANI YEDEKLE butonu
@@ -131,9 +130,9 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _btnBackup.Size = new Size(220, 42);
             _btnBackup.BorderRadius = 8;
             _btnBackup.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            _btnBackup.FillColor = Color.FromArgb(100, 100, 130);
+            _btnBackup.FillColor = UiTheme.Sidebar;
             _btnBackup.ForeColor = Color.White;
-            _btnBackup.HoverState.FillColor = ControlPaint.Dark(Color.FromArgb(100, 100, 130), 0.1f);
+            _btnBackup.HoverState.FillColor = UiTheme.SidebarHover;
             _btnBackup.Click += (_, __) => BackupDb();
 
             top.Controls.Add(_dtFrom);
@@ -148,10 +147,10 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _tabs.BackColor = BgDark;
             _tabs.Font = new Font("Segoe UI", 10);
 
-            StyleGrid(_gridDaily, BgMid, Accent);
-            StyleGrid(_gridProducts, BgMid, AccentBlu);
-            StyleGrid(_gridLowStock, BgMid, Accent);
-            StyleGrid(_gridCustomers, BgMid, AccentGrn);
+            StyleGrid(_gridDaily, UiTheme.Surface, Accent);
+            StyleGrid(_gridProducts, UiTheme.Surface, AccentBlu);
+            StyleGrid(_gridLowStock, UiTheme.Surface, Accent);
+            StyleGrid(_gridCustomers, UiTheme.Surface, AccentGrn);
 
             // ── Tab 1: Günlük Satış ─────────────────────────────────────────
             var tabDaily = MakeDarkTab("📅 Günlük Satış");

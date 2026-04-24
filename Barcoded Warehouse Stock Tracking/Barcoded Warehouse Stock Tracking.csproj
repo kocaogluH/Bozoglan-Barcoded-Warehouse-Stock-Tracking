@@ -95,6 +95,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Database.cs" />
+    <Compile Include="UiTheme.cs" />
     <Compile Include="AppPaths.cs" />
     <Compile Include="Security.cs" />
     <Compile Include="Session.cs" />
@@ -150,14 +151,6 @@
     <None Include="..\NuGet.Config">
       <Link>NuGet.Config</Link>
     </None>
-    <Content Include="bin\Debug\x86\SQLite.Interop.dll">
-      <Link>x86\SQLite.Interop.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="bin\Debug\x64\SQLite.Interop.dll">
-      <Link>x64\SQLite.Interop.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">

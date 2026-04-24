@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Guna.UI2.WinForms;
 
@@ -7,199 +8,226 @@ namespace Barcoded_Warehouse_Stock_Tracking
 {
     public class LoginForm : Form
     {
-        private readonly Guna2TextBox _txtUser = new Guna2TextBox();
-        private readonly Guna2TextBox _txtPass = new Guna2TextBox();
-        private readonly Guna2Button _btnLogin = new Guna2Button();
-        private readonly Label _lblError = new Label();
+        private readonly Guna2TextBox _txtUser  = new Guna2TextBox();
+        private readonly Guna2TextBox _txtPass  = new Guna2TextBox();
+        private readonly Guna2Button  _btnLogin = new Guna2Button();
+        private readonly Label        _lblError = new Label();
 
         public LoginForm()
         {
-            // --- Form Ayarları ---
-            Text = "Poseidon Yazılım - Giriş";
-            StartPosition = FormStartPosition.CenterScreen;
+            // ── Form ──────────────────────────────────────────────────────────
+            Text            = "Poseidon — Giriş";
+            StartPosition   = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            ClientSize = new Size(460, 700);
-            BackColor = Color.FromArgb(26, 26, 46);
+            MaximizeBox     = false;
+            AutoScaleMode   = AutoScaleMode.None;   // DPI ölçeklemeyi kapat
+            Font            = new Font("Segoe UI", 9f);
 
-            // --- Logo (Dairesel) ---
-            int logoSize = 130;
+            // Form: 460 × 660 (sabit, DPI bağımsız)
+            ClientSize = new Size(460, 660);
+
+            // Gradient arka plan
+            this.Paint += (s, pe) =>
+            {
+                using (var br = new LinearGradientBrush(
+                    this.ClientRectangle,
+                    Color.FromArgb(10, 25,  77),   // lacivert
+                    Color.FromArgb( 3, 82, 143),   // safir mavisi
+                    150f))
+                    pe.Graphics.FillRectangle(br, this.ClientRectangle);
+            };
+
+            // ── Logo ──────────────────────────────────────────────────────────
+            const int LS = 110;  // Logo Size
             var pbLogo = new PictureBox
             {
-                Size = new Size(logoSize, logoSize),
-                Location = new Point((460 - logoSize) / 2, 16),
-                SizeMode = PictureBoxSizeMode.StretchImage,
+                Size      = new Size(LS, LS),
+                Location  = new Point((460 - LS) / 2, 24),  // x=175, y=24
+                SizeMode  = PictureBoxSizeMode.StretchImage,
                 BackColor = Color.Transparent
             };
 
-            // Dairesel Region maskesi
-            var circlePath = new System.Drawing.Drawing2D.GraphicsPath();
-            circlePath.AddEllipse(0, 0, logoSize, logoSize);
-            pbLogo.Region = new Region(circlePath);
+            var cp = new GraphicsPath();
+            cp.AddEllipse(0, 0, LS, LS);
+            pbLogo.Region = new Region(cp);
 
-            // Cover modu: logo daire çerçevesini tamamen doldurur, boşluk kalmaz
             pbLogo.Paint += (s, pe) =>
             {
                 if (pbLogo.Image == null) return;
-                pe.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                pe.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+                pe.Graphics.SmoothingMode     = SmoothingMode.AntiAlias;
+                pe.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                using (var path = new GraphicsPath())
                 {
                     path.AddEllipse(0, 0, pbLogo.Width - 1, pbLogo.Height - 1);
                     pe.Graphics.SetClip(path);
                     var img = pbLogo.Image;
-                    // Cover: daire tamamen dolar, kenarlar kırpılabilir
-                    float scale = Math.Max((float)pbLogo.Width / img.Width, (float)pbLogo.Height / img.Height);
-                    float drawW = img.Width * scale;
-                    float drawH = img.Height * scale;
-                    float drawX = (pbLogo.Width - drawW) / 2f;
-                    float drawY = (pbLogo.Height - drawH) / 2f;
-                    pe.Graphics.DrawImage(img, drawX, drawY, drawW, drawH);
+                    float sc = Math.Max((float)pbLogo.Width / img.Width, (float)pbLogo.Height / img.Height);
+                    float dw = img.Width * sc, dh = img.Height * sc;
+                    pe.Graphics.DrawImage(img, (pbLogo.Width - dw) / 2f, (pbLogo.Height - dh) / 2f, dw, dh);
                 }
             };
 
             try
             {
-                string exeDir = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
-                string projectDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(exeDir, "..", ".."));
-                
-                string[] logoPaths = new[]
+                string exe  = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
+                string proj = System.IO.Path.GetFullPath(System.IO.Path.Combine(exe, "..", ".."));
+                foreach (var p in new[]
                 {
-                    // 1. Proje Resources klasörü (Geliştirme aşaması için)
-                    System.IO.Path.Combine(projectDir, "Resources", "poseidon_logo.png"),
-                    // 2. Bin/Resources klasörü (Derlenmiş uygulama için)
-                    System.IO.Path.Combine(exeDir, "Resources", "poseidon_logo.png"),
-                    // 3. Mevcut dizin
-                    System.IO.Path.Combine(exeDir, "poseidon_logo.png"),
-                    // 4. Kullanıcının belirttiği orijinal yol (Yedek olarak)
+                    System.IO.Path.Combine(proj, "Resources", "poseidon_logo.png"),
+                    System.IO.Path.Combine(exe,  "Resources", "poseidon_logo.png"),
+                    System.IO.Path.Combine(exe,  "poseidon_logo.png"),
                     @"C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\iş\Poseidon Otomasyon&Yazılım\Logo-2--removebg-preview.png"
-                };
-
-                foreach (var path in logoPaths)
-                {
-                    if (System.IO.File.Exists(path))
-                    {
-                        pbLogo.Image = System.Drawing.Image.FromFile(path);
-                        break;
-                    }
-                }
+                })
+                { if (System.IO.File.Exists(p)) { pbLogo.Image = Image.FromFile(p); break; } }
             }
             catch { }
 
-
-            // --- Başlık Grubu ---
+            // ── Marka Başlığı  (logo alt = 24+110 = 134) ─────────────────────
+            // lblBrand: y=140, h=40  →  alt=180
             var lblBrand = new Label
             {
-                Text = "Poseidon Yazılım",
-                ForeColor = Color.FromArgb(233, 69, 96),
-                Font = new Font("Segoe UI", 22, FontStyle.Bold),
+                Text      = "Poseidon Yazılım",
+                ForeColor = Color.White,
+                Font      = new Font("Segoe UI", 20, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Size = new Size(460, 44),
-                Location = new Point(0, 148)
+                Size      = new Size(460, 40),
+                Location  = new Point(0, 140),
+                BackColor = Color.Transparent
             };
 
+            // lblSub: y=182, h=22  →  alt=204
             var lblSub = new Label
             {
-                Text = "Depo & Stok Yönetim Sistemi",
-                ForeColor = Color.FromArgb(180, 180, 200),
-                Font = new Font("Segoe UI", 10),
+                Text      = "Depo & Stok Yönetim Sistemi",
+                ForeColor = Color.FromArgb(180, 210, 255),
+                Font      = new Font("Segoe UI", 9),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Size = new Size(460, 25),
-                Location = new Point(0, 195)
+                Size      = new Size(460, 22),
+                Location  = new Point(0, 182),
+                BackColor = Color.Transparent
             };
 
-            // --- KART PANELİ (Ana Taşıyıcı) ---
+            // ── Kart  (lblSub alt=204 → +14 boşluk = 218) ────────────────────
+            // Kart: x=40, y=218, w=380, h=370  →  sağ kenar=420, alt=588
+            const int CW = 380, CH = 370;
+            const int CX = (460 - CW) / 2;  // 40
+            const int CY = 218;
+
             var card = new Guna2Panel
             {
-                Size = new Size(380, 400),
-                Location = new Point(40, 228),
-                FillColor = Color.FromArgb(22, 33, 62),
-                BorderRadius = 20,
-                ShadowDecoration = {
-                    Enabled = true,
-                    Color = Color.FromArgb(233, 69, 96),
-                    Depth = 15,
-                    BorderRadius = 20
+                Size         = new Size(CW, CH),
+                Location     = new Point(CX, CY),
+                FillColor    = Color.White,
+                BorderRadius = 22,
+                ShadowDecoration =
+                {
+                    Enabled      = true,
+                    Color        = Color.FromArgb(90, 0, 20, 80),
+                    Depth        = 22,
+                    BorderRadius = 22,
+                    Shadow       = new Padding(10)
                 }
             };
 
-            // --- HİZALAMA AYARLARI (Matematiksel Orta) ---
-            int cardW = card.Width;    // 380
-            int ctrlW = 300;           // İçerideki kutuların genişliği (Taşmaması için biraz daralttık)
-            int xPos = (cardW - ctrlW) / 2; // (380 - 300) / 2 = 40 (Tam orta)
+            // Kart içi ─ tüm Y değerleri karta görelidir
+            // CTRL_W=300, iç yatay başlangıç: (380-300)/2 = 40
+            const int TW = 300;
+            const int TX = (CW - TW) / 2;   // 40
 
+            // lblTitle: y=28, h=36  →  alt=64
             var lblTitle = new Label
             {
-                Text = "Hesabınıza Giriş Yapın",
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 13, FontStyle.Bold),
+                Text      = "Hesabınıza Giriş Yapın",
+                ForeColor = Color.FromArgb(15, 23, 42),
+                Font      = new Font("Segoe UI", 13, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Size = new Size(ctrlW, 40),
-                Location = new Point(xPos, 30)
+                Size      = new Size(TW, 36),
+                Location  = new Point(TX, 28),
+                BackColor = Color.Transparent
             };
 
-            // --- Kullanıcı Adı ---
-            _txtUser.Size = new Size(ctrlW, 50);
-            _txtUser.Location = new Point(xPos, 100);
-            _txtUser.PlaceholderText = "Kullanıcı Adı";
-            _txtUser.BorderRadius = 10;
-            _txtUser.FillColor = Color.FromArgb(35, 45, 78);
-            _txtUser.BorderColor = Color.FromArgb(60, 80, 120);
-            _txtUser.ForeColor = Color.White;
-            _txtUser.TextOffset = new Point(10, 0);
+            // ince ayırıcı çizgi: y=70, h=1  →  alt=71
+            var divider = new Label
+            {
+                BackColor = Color.FromArgb(226, 232, 240),
+                Size      = new Size(TW, 1),
+                Location  = new Point(TX, 70)
+            };
 
-            // --- Şifre ---
-            _txtPass.Size = new Size(ctrlW, 50);
-            _txtPass.Location = new Point(xPos, 165); // Üst kutudan 15px boşluk
-            _txtPass.PlaceholderText = "Şifre";
-            _txtPass.UseSystemPasswordChar = true;
-            _txtPass.BorderRadius = 10;
-            _txtPass.FillColor = Color.FromArgb(35, 45, 78);
-            _txtPass.BorderColor = Color.FromArgb(60, 80, 120);
-            _txtPass.ForeColor = Color.White;
-            _txtPass.TextOffset = new Point(10, 0);
+            // txtUser: y=90, h=50  →  alt=140
+            _txtUser.Size               = new Size(TW, 50);
+            _txtUser.Location           = new Point(TX, 90);
+            _txtUser.PlaceholderText    = "Kullanıcı Adı";
+            _txtUser.BorderRadius       = 10;
+            _txtUser.FillColor          = Color.FromArgb(241, 245, 249);
+            _txtUser.BorderColor        = Color.FromArgb(203, 213, 225);
+            _txtUser.ForeColor          = Color.FromArgb(15, 23, 42);
+            _txtUser.Font               = new Font("Segoe UI", 11);
+            _txtUser.PlaceholderForeColor = Color.FromArgb(148, 163, 184);
+            _txtUser.TextOffset         = new Point(10, 0);
 
-            // --- Giriş Butonu ---
-            _btnLogin.Text = "SİSTEME GİRİŞ YAP";
-            _btnLogin.Size = new Size(ctrlW, 55);
-            _btnLogin.Location = new Point(xPos, 260); // Buton ile kutular arası mesafe
-            _btnLogin.BorderRadius = 12;
-            _btnLogin.FillColor = Color.FromArgb(233, 69, 96);
-            _btnLogin.Font = new Font("Segoe UI", 11, FontStyle.Bold);
-            _btnLogin.Cursor = Cursors.Hand;
-            _btnLogin.Click += (_, __) => DoLogin();
+            // txtPass: y=154, h=50  →  alt=204  (140+14 boşluk=154)
+            _txtPass.Size               = new Size(TW, 50);
+            _txtPass.Location           = new Point(TX, 154);
+            _txtPass.PlaceholderText    = "Şifre";
+            _txtPass.BorderRadius       = 10;
+            _txtPass.FillColor          = Color.FromArgb(241, 245, 249);
+            _txtPass.BorderColor        = Color.FromArgb(203, 213, 225);
+            _txtPass.ForeColor          = Color.FromArgb(15, 23, 42);
+            _txtPass.Font               = new Font("Segoe UI", 11);
+            _txtPass.UseSystemPasswordChar  = true;
+            _txtPass.PlaceholderForeColor   = Color.FromArgb(148, 163, 184);
+            _txtPass.TextOffset         = new Point(10, 0);
 
-            // --- Hata Mesajı ---
-            _lblError.Size = new Size(ctrlW, 25);
-            _lblError.Location = new Point(xPos, 330);
-            _lblError.ForeColor = Color.FromArgb(233, 69, 96);
+            // btnLogin: y=224, h=52  →  alt=276  (204+20 boşluk=224)
+            _btnLogin.Text              = "SİSTEME GİRİŞ YAP";
+            _btnLogin.Size              = new Size(TW, 52);
+            _btnLogin.Location          = new Point(TX, 224);
+            _btnLogin.BorderRadius      = 10;
+            _btnLogin.FillColor         = Color.FromArgb(14, 165, 233);
+            _btnLogin.HoverState.FillColor = Color.FromArgb(2, 132, 199);
+            _btnLogin.Font              = new Font("Segoe UI", 11, FontStyle.Bold);
+            _btnLogin.ForeColor         = Color.White;
+            _btnLogin.Cursor            = Cursors.Hand;
+            _btnLogin.Animated          = true;
+            _btnLogin.Click            += (_, __) => DoLogin();
+
+            // lblError: y=292, h=22  →  alt=314  (276+16 boşluk=292)
+            // Kart yüksekliği 370  →  314 < 370 ✓
+            _lblError.Size      = new Size(TW, 22);
+            _lblError.Location  = new Point(TX, 292);
+            _lblError.ForeColor = UiTheme.Danger;
             _lblError.TextAlign = ContentAlignment.MiddleCenter;
-            _lblError.Text = "";
+            _lblError.Font      = new Font("Segoe UI", 9);
+            _lblError.Text      = "";
+            _lblError.BackColor = Color.Transparent;
 
-            // Kontrolleri Kartın İçine Ekle
             card.Controls.Add(lblTitle);
+            card.Controls.Add(divider);
             card.Controls.Add(_txtUser);
             card.Controls.Add(_txtPass);
             card.Controls.Add(_btnLogin);
             card.Controls.Add(_lblError);
 
-            // Sayfa Alt Yazısı
-            var lblFooter = new Label
+            // ── Telif  (kart alt=218+370=588 → +14 = 602) ────────────────────
+            // lblCopy: y=604, h=22  →  alt=626 < 660 ✓
+            var lblCopy = new Label
             {
-                Text = "© 2026 Poseidon Yazılım — Software & Automation",
-                ForeColor = Color.FromArgb(100, 100, 130),
-                Font = new Font("Segoe UI", 8),
+                Text      = "© 2026 Poseidon Yazılım — Software & Automation",
+                ForeColor = Color.FromArgb(150, 185, 225),
+                Font      = new Font("Segoe UI", 8),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Size = new Size(460, 20),
-                Location = new Point(0, 650)
+                Size      = new Size(460, 22),
+                Location  = new Point(0, 604),
+                BackColor = Color.Transparent
             };
 
-            // Ana Forma Ekle
-            Controls.Add(pbLogo);
-            Controls.Add(lblBrand);
-            Controls.Add(lblSub);
+            // Controls.Add sırası: sonra eklenen ÜSTE çıkar.
             Controls.Add(card);
-            Controls.Add(lblFooter);
+            Controls.Add(lblCopy);
+            Controls.Add(lblSub);
+            Controls.Add(lblBrand);
+            Controls.Add(pbLogo);   // en üstte
 
             AcceptButton = _btnLogin;
         }
@@ -220,10 +248,9 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 var result = Database.AuthenticateUser(user, pass);
                 if (result.HasValue)
                 {
-                    Session.UserId = result.Value.Id;
+                    Session.UserId   = result.Value.Id;
                     Session.Username = user;
-                    Session.Role = result.Value.Role;
-
+                    Session.Role     = result.Value.Role;
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }

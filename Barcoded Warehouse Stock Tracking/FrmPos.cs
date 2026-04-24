@@ -9,14 +9,14 @@ namespace Barcoded_Warehouse_Stock_Tracking
 {
     public class FrmPos : Form
     {
-        private static readonly Color BgDark = Color.FromArgb(26, 26, 46);
-        private static readonly Color BgMid = Color.FromArgb(22, 33, 62);
-        private static readonly Color BgInput = Color.FromArgb(35, 45, 78);
-        private static readonly Color Accent = Color.FromArgb(233, 69, 96);
-        private static readonly Color AccentBlu = Color.FromArgb(52, 152, 219);
-        private static readonly Color AccentGrn = Color.FromArgb(46, 204, 113);
-        private static readonly Color TextMain = Color.FromArgb(234, 234, 234);
-        private static readonly Color TextDim = Color.FromArgb(140, 140, 160);
+        private static readonly Color BgDark = UiTheme.MainBackground;
+        private static readonly Color BgMid = UiTheme.Surface;
+        private static readonly Color BgInput = UiTheme.InputFill;
+        private static readonly Color Accent = UiTheme.Primary;
+        private static readonly Color AccentBlu = UiTheme.PrimaryDark;
+        private static readonly Color AccentGrn = UiTheme.Success;
+        private static readonly Color TextMain = UiTheme.TextPrimary;
+        private static readonly Color TextDim = UiTheme.TextMuted;
 
         private readonly Guna2TextBox _txtBarcode = new Guna2TextBox();
         private readonly Guna2NumericUpDown _numQty = new Guna2NumericUpDown();
@@ -111,7 +111,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _txtBarcode.Dock = DockStyle.Fill;
             _txtBarcode.PlaceholderText = "Barkod okut veya yaz...";
             _txtBarcode.BorderRadius = 8; _txtBarcode.FillColor = BgInput;
-            _txtBarcode.BorderColor = AccentBlu; _txtBarcode.ForeColor = TextMain;
+            _txtBarcode.BorderColor = UiTheme.InputBorder; _txtBarcode.ForeColor = TextMain;
             _txtBarcode.Font = new Font("Segoe UI", 11);
             _txtBarcode.Margin = new Padding(2, 2, 8, 2);
             _txtBarcode.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; AddToCart(); } };
@@ -149,19 +149,19 @@ namespace Barcoded_Warehouse_Stock_Tracking
             // ══════════════════════════════════════════════════════════════════════
             var center = new Panel { Dock = DockStyle.Fill, BackColor = BgDark, Padding = new Padding(12) };
             _grid.Dock = DockStyle.Fill;
-            _grid.Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Dark;
-            _grid.ThemeStyle.BackColor = BgMid;
-            _grid.ThemeStyle.GridColor = Color.FromArgb(40, 55, 90);
+            _grid.Theme = Guna.UI2.WinForms.Enums.DataGridViewPresetThemes.Default;
+            _grid.ThemeStyle.BackColor = UiTheme.Surface;
+            _grid.ThemeStyle.GridColor = UiTheme.GridLine;
 
-            _grid.ThemeStyle.HeaderStyle.BackColor = Color.FromArgb(22, 33, 62);
+            _grid.ThemeStyle.HeaderStyle.BackColor = UiTheme.GridHeaderBg;
             _grid.ThemeStyle.HeaderStyle.ForeColor = Accent;
             _grid.ThemeStyle.HeaderStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
-            _grid.ThemeStyle.RowsStyle.BackColor = BgMid;
+            _grid.ThemeStyle.RowsStyle.BackColor = UiTheme.Surface;
             _grid.ThemeStyle.RowsStyle.ForeColor = TextMain;
             _grid.ThemeStyle.RowsStyle.Font = new Font("Segoe UI", 9);
-            _grid.ThemeStyle.RowsStyle.SelectionBackColor = Color.FromArgb(60, 80, 140);
-            _grid.ThemeStyle.RowsStyle.SelectionForeColor = Color.White;
+            _grid.ThemeStyle.RowsStyle.SelectionBackColor = UiTheme.Selection;
+            _grid.ThemeStyle.RowsStyle.SelectionForeColor = TextMain;
 
             _grid.BorderStyle = BorderStyle.None;
             _grid.RowHeadersVisible = false;
@@ -184,7 +184,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             // BOTTOM PANEL  — TableLayoutPanel ile tam hizalama
             // ══════════════════════════════════════════════════════════════════════
             const int BOT_H = 185;
-            var bottom = new Panel { Dock = DockStyle.Bottom, Height = BOT_H, BackColor = BgMid };
+            var bottom = new Panel { Dock = DockStyle.Bottom, Height = BOT_H, BackColor = UiTheme.Surface };
 
             // Sol blok: ödeme alanları (TableLayoutPanel)
             var tlpPay = new TableLayoutPanel
@@ -217,7 +217,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             void StyleInput(Guna2TextBox t, bool ro = false)
             {
                 t.Dock = DockStyle.Fill; t.Height = 38; t.BorderRadius = 8;
-                t.FillColor = ro ? Color.FromArgb(28, 38, 65) : BgInput;
+                t.FillColor = ro ? UiTheme.SurfaceMuted : BgInput;
                 t.ForeColor = ro ? AccentGrn : TextMain;
                 t.Font = new Font("Segoe UI", 10, ro ? FontStyle.Bold : FontStyle.Regular);
                 t.ReadOnly = ro; t.Margin = new Padding(0, 2, 8, 2);
@@ -248,16 +248,16 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
             _cmbCustomer.Dock = DockStyle.Fill; _cmbCustomer.Height = 38;
             _cmbCustomer.BorderRadius = 8; _cmbCustomer.Enabled = false;
-            _cmbCustomer.FillColor = BgInput; _cmbCustomer.ForeColor = TextDim;
-            _cmbCustomer.DisabledState.FillColor = Color.FromArgb(28, 38, 65);
+            _cmbCustomer.FillColor = BgInput; _cmbCustomer.ForeColor = TextMain;
+            _cmbCustomer.DisabledState.FillColor = UiTheme.SurfaceMuted;
             _cmbCustomer.DisabledState.ForeColor = TextDim;
             _cmbCustomer.Font = new Font("Segoe UI", 10);
             _cmbCustomer.Margin = new Padding(0, 2, 8, 2);
 
             _btnCustomers.Text = "Müşteriler"; _btnCustomers.Dock = DockStyle.Fill;
             _btnCustomers.BorderRadius = 8;
-            _btnCustomers.FillColor = Color.FromArgb(52, 73, 130);
-            _btnCustomers.DisabledState.FillColor = Color.FromArgb(35, 45, 78);
+            _btnCustomers.FillColor = UiTheme.PrimaryDark;
+            _btnCustomers.DisabledState.FillColor = UiTheme.SurfaceMuted;
             _btnCustomers.DisabledState.ForeColor = TextDim;
             _btnCustomers.ForeColor = Color.White; _btnCustomers.Enabled = false;
             _btnCustomers.Font = new Font("Segoe UI", 10, FontStyle.Bold);
@@ -290,7 +290,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 Location = new Point(0, 8)
             };
 
-            _lblTotal.Text = "0,00 TL"; _lblTotal.ForeColor = Accent;
+            _lblTotal.Text = "0,00 TL"; _lblTotal.ForeColor = UiTheme.Primary;
             _lblTotal.Font = new Font("Segoe UI", 15, FontStyle.Bold);  // 20 → 15 (daha dengeli)
             _lblTotal.AutoSize = true; _lblTotal.Location = new Point(0, 28);
 

@@ -65,7 +65,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             // 
             // tabProducts
             // 
-            this.tabProducts.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(46)))));
+            this.tabProducts.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(248)))));
             this.tabProducts.Controls.Add(this.dgvProducts);
             this.tabProducts.Controls.Add(this.btnAdd);
             this.tabProducts.Controls.Add(this.btnPos);
@@ -271,7 +271,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             // 
             // tabMovements
             // 
-            this.tabMovements.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(46)))));
+            this.tabMovements.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(248)))));
             this.tabMovements.Controls.Add(this.dgvMovements);
             this.tabMovements.Controls.Add(this.btnAddMovement);
             this.tabMovements.Controls.Add(this.cmbType);
@@ -433,7 +433,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(46)))));
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(248)))));
             this.ClientSize = new System.Drawing.Size(1100, 640);
             this.Controls.Add(this.tabControl);
             this.Name = "Form1";
