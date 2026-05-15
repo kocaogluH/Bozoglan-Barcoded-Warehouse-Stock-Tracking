@@ -9,7 +9,7 @@ using iTextSharp.text.pdf;
 using Guna.UI2.WinForms;
 using Barcoded_Warehouse_Stock_Tracking.Business;
 using Barcoded_Warehouse_Stock_Tracking.DataAccess;
-using Barcoded_Warehouse_Stock_Tracking.Entities;
+using Barcoded_Warehouse_Stock_Tracking.Entities;  
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Data;
 
@@ -377,7 +377,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
         private void SetupRoleAccess()
         {
-            if (!Session.IsAdmin)
+            if (!Session.IsAdmin)   
             {
                 // Personel yetkileri sınırlama
                 btnReports.Enabled = false;
