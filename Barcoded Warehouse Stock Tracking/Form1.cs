@@ -377,7 +377,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
         private void SetupRoleAccess()
         {
-            if (!Session.IsAdmin)
+            if (!Session.IsAdmin)   
             {
                 // Personel yetkileri sınırlama
                 btnReports.Enabled = false;
