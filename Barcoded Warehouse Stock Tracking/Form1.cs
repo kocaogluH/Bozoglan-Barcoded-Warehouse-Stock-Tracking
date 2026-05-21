@@ -9,7 +9,7 @@ using iTextSharp.text.pdf;
 using Guna.UI2.WinForms;
 using Barcoded_Warehouse_Stock_Tracking.Business;
 using Barcoded_Warehouse_Stock_Tracking.DataAccess;
-using Barcoded_Warehouse_Stock_Tracking.Entities;  
+using Barcoded_Warehouse_Stock_Tracking.Entities;   
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Data;
 
@@ -48,6 +48,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _productService = new ProductService(_context);
 
             this.FormClosed += (s, e) => _context?.Dispose();
+            this.FormClosing += (s, e) => Database.BackupDatabase();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -258,7 +259,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _navReports = nav("  📊  Raporlar", () => { OpenChildPage("Raporlar", new FrmReports()); });
             nav("  ⚙  Ayarlar", () =>
             {
-                MessageBox.Show("Ayarlar ekranı yakında eklenecek.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                OpenChildPage("Ayarlar", new FrmSettings());
             });
 
             var lblFoot = new Label

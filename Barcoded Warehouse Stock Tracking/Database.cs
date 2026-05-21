@@ -237,6 +237,76 @@ CREATE TABLE IF NOT EXISTS SaleReturnItems (
             }
         }
 
+        public static void UpdatePassword(long userId, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword)) throw new ArgumentException("Şifre boş olamaz.");
+            var hash = Security.HashPassword(newPassword);
+            using (var conn = GetConnection())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "UPDATE Users SET PasswordHash = @h WHERE Id = @id";
+                cmd.Parameters.AddWithValue("@h", hash);
+                cmd.Parameters.AddWithValue("@id", userId);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public static void UpdateUsername(long userId, string newUsername)
+        {
+            if (string.IsNullOrWhiteSpace(newUsername)) throw new ArgumentException("Kullanıcı adı boş olamaz.");
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                // Aynı kullanıcı adının başka birisi tarafından kullanılıp kullanılmadığını kontrol et
+                using (var chk = conn.CreateCommand())
+                {
+                    chk.CommandText = "SELECT COUNT(1) FROM Users WHERE LOWER(Username) = LOWER(@u) AND Id != @id";
+                    chk.Parameters.AddWithValue("@u", newUsername);
+                    chk.Parameters.AddWithValue("@id", userId);
+                    long cnt = Convert.ToInt64(chk.ExecuteScalar() ?? 0L);
+                    if (cnt > 0) throw new InvalidOperationException("Bu kullanıcı adı zaten başka biri tarafından kullanılıyor.");
+                }
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE Users SET Username = @u WHERE Id = @id";
+                    cmd.Parameters.AddWithValue("@u", newUsername);
+                    cmd.Parameters.AddWithValue("@id", userId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static void BackupDatabase()
+        {
+            try
+            {
+                string dataDir = AppDomain.CurrentDomain.GetData("DataDirectory") as string;
+                if (string.IsNullOrWhiteSpace(dataDir)) return;
+                
+                string dbPath = System.IO.Path.Combine(dataDir, "warehouse.db");
+                if (!System.IO.File.Exists(dbPath)) return;
+
+                string docsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string backupFolder = System.IO.Path.Combine(docsFolder, "BarcodedWarehouse_Backups");
+                
+                if (!System.IO.Directory.Exists(backupFolder))
+                {
+                    System.IO.Directory.CreateDirectory(backupFolder);
+                }
+
+                string backupFileName = $"warehouse_backup_{DateTime.Now:yyyyMMdd_HHmmss}.db";
+                string backupFilePath = System.IO.Path.Combine(backupFolder, backupFileName);
+
+                System.IO.File.Copy(dbPath, backupFilePath, true);
+            }
+            catch (Exception)
+            {
+                // Sessizce yoksay veya logla
+            }
+        }
+
+
         public static DataTable GetProducts()
         {
             using (var conn = GetConnection())

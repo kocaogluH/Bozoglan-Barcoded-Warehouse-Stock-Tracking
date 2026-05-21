@@ -15,6 +15,10 @@ namespace Barcoded_Warehouse_Stock_Tracking
         [STAThread]
         static void Main()
         {
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += Application_ThreadException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             try
@@ -49,6 +53,33 @@ namespace Barcoded_Warehouse_Stock_Tracking
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            LogError(e.Exception);
+            MessageBox.Show("Sistemde beklenmeyen bir hata oluştu. Hata log dosyasına kaydedildi.", "Sistem Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                LogError(ex);
+            }
+            MessageBox.Show("Sistemde kritik bir hata oluştu ve uygulama kapatılacak.", "Kritik Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private static void LogError(Exception ex)
+        {
+            try
+            {
+                var appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BarcodedWarehouse");
+                var logFile = Path.Combine(appDir, "error.log");
+                var message = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.Message}{Environment.NewLine}{ex.StackTrace}{Environment.NewLine}{new string('-', 50)}{Environment.NewLine}";
+                File.AppendAllText(logFile, message);
+            }
+            catch { }
         }
     }
 }

@@ -155,34 +155,34 @@ namespace Barcoded_Warehouse_Stock_Tracking
             };
 
             // txtUser: y=90, h=50  →  alt=140
-            _txtUser.Size               = new Size(TW, 50);
+            _txtUser.Size               = new Size(TW,55);
             _txtUser.Location           = new Point(TX, 90);
             _txtUser.PlaceholderText    = "Kullanıcı Adı";
             _txtUser.BorderRadius       = 10;
             _txtUser.FillColor          = Color.FromArgb(241, 245, 249);
             _txtUser.BorderColor        = Color.FromArgb(203, 213, 225);
             _txtUser.ForeColor          = Color.FromArgb(15, 23, 42);
-            _txtUser.Font               = new Font("Segoe UI", 11);
+            _txtUser.Font               = new Font("Segoe UI", 10);
             _txtUser.PlaceholderForeColor = Color.FromArgb(148, 163, 184);
             _txtUser.TextOffset         = new Point(10, 0);
 
             // txtPass: y=154, h=50  →  alt=204  (140+14 boşluk=154)
-            _txtPass.Size               = new Size(TW, 50);
-            _txtPass.Location           = new Point(TX, 154);
+            _txtPass.Size               = new Size(TW, 55);
+            _txtPass.Location           = new Point(TX, 160);
             _txtPass.PlaceholderText    = "Şifre";
             _txtPass.BorderRadius       = 10;
             _txtPass.FillColor          = Color.FromArgb(241, 245, 249);
             _txtPass.BorderColor        = Color.FromArgb(203, 213, 225);
             _txtPass.ForeColor          = Color.FromArgb(15, 23, 42);
-            _txtPass.Font               = new Font("Segoe UI", 11);
+            _txtPass.Font               = new Font("Segoe UI", 10);
             _txtPass.UseSystemPasswordChar  = true;
             _txtPass.PlaceholderForeColor   = Color.FromArgb(148, 163, 184);
             _txtPass.TextOffset         = new Point(10, 0);
 
-            // btnLogin: y=224, h=52  →  alt=276  (204+20 boşluk=224)
+            // btnLogin: y=224, h=50  →  alt=276  (204+20 boşluk=224)
             _btnLogin.Text              = "SİSTEME GİRİŞ YAP";
-            _btnLogin.Size              = new Size(TW, 52);
-            _btnLogin.Location          = new Point(TX, 224);
+            _btnLogin.Size              = new Size(TW, 55);
+            _btnLogin.Location          = new Point(TX, 275);
             _btnLogin.BorderRadius      = 10;
             _btnLogin.FillColor         = Color.FromArgb(14, 165, 233);
             _btnLogin.HoverState.FillColor = Color.FromArgb(2, 132, 199);
