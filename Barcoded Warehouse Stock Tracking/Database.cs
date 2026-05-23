@@ -185,26 +185,17 @@ CREATE TABLE IF NOT EXISTS SaleReturnItems (
 
                 using (var cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT COUNT(1) FROM Users WHERE Username = 'admin'";
-                    long adminCount = Convert.ToInt64(cmd.ExecuteScalar() ?? 0L);
-                    var hash = Security.HashPassword("1234");
-                    if (adminCount == 0)
+                    cmd.CommandText = "SELECT COUNT(1) FROM Users";
+                    long userCount = Convert.ToInt64(cmd.ExecuteScalar() ?? 0L);
+                    if (userCount == 0)
                     {
+                        var hash = Security.HashPassword("1234");
                         using (var ins = conn.CreateCommand())
                         {
                             ins.CommandText = "INSERT INTO Users(Username, PasswordHash, Role, CreatedAt) VALUES('admin', @h, 'Admin', @dt)";
                             ins.Parameters.AddWithValue("@h", hash);
                             ins.Parameters.AddWithValue("@dt", DateTime.Now.ToString("s", CultureInfo.InvariantCulture));
                             ins.ExecuteNonQuery();
-                        }
-                    }
-                    else
-                    {
-                        using (var upd = conn.CreateCommand())
-                        {
-                            upd.CommandText = "UPDATE Users SET PasswordHash = @h WHERE Username = 'admin'";
-                            upd.Parameters.AddWithValue("@h", hash);
-                            upd.ExecuteNonQuery();
                         }
                     }
                 }
