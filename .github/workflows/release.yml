@@ -25,7 +25,7 @@ jobs:
       run: nuget restore "Barcoded Warehouse Stock Tracking.sln"
 
     - name: Build Solution
-      run: msbuild "Barcoded Warehouse Stock Tracking.sln" /p:Configuration=Release /p:Platform="Any CPU"
+      run: msbuild "Barcoded Warehouse Stock Tracking.sln" /p:Configuration=Release /p:Platform="Any CPU" /p:SignManifests=false /p:GenerateManifests=false
 
     - name: Compile Installer with Inno Setup
       run: |
