@@ -15,12 +15,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 ; Derlenen dosyaları kopyalamak için (Release klasörü üzerinden)
 Source: "bin\Release\Barcoded Warehouse Stock Tracking.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bin\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion recurse subdirs createallsubdirs
-Source: "app_logo.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "bin\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\Poseidon Depo ve Stok"; Filename: "{app}\Barcoded Warehouse Stock Tracking.exe"; IconFilename: "{app}\app_logo.ico"
-Name: "{commondesktop}\Poseidon Depo ve Stok"; Filename: "{app}\Barcoded Warehouse Stock Tracking.exe"; Tasks: desktopicon; IconFilename: "{app}\app_logo.ico"
+Name: "{group}\Poseidon Depo ve Stok"; Filename: "{app}\Barcoded Warehouse Stock Tracking.exe"
+Name: "{commondesktop}\Poseidon Depo ve Stok"; Filename: "{app}\Barcoded Warehouse Stock Tracking.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\Barcoded Warehouse Stock Tracking.exe"; Description: "{cm:LaunchProgram,Poseidon Depo ve Stok}"; Flags: nowait postinstall skipifsilent
