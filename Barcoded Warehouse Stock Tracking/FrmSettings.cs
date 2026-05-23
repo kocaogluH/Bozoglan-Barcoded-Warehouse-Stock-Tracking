@@ -22,7 +22,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
         {
             this.Text = "Ayarlar";
             this.BackColor = UiTheme.MainBackground;
-            this.Size = new Size(500, 500);
+            this.Size = new Size(500, 580);
             this.FormBorderStyle = FormBorderStyle.None;
 
             int leftMargin = 30;
@@ -156,6 +156,42 @@ namespace Barcoded_Warehouse_Stock_Tracking
             btnSavePassword.HoverState.FillColor = ControlPaint.Dark(UiTheme.Success, 0.08f);
             btnSavePassword.Click += BtnSavePassword_Click;
             Controls.Add(btnSavePassword);
+
+            // ── Güncelleme Bölümü ──
+            var divider3 = new Label
+            {
+                BackColor = UiTheme.GridLine,
+                Size = new Size(fieldWidth, 1),
+                Location = new Point(leftMargin, 444)
+            };
+            Controls.Add(divider3);
+
+            var lblUpdateSection = new Label
+            {
+                Text = "Sistem Güncelleme",
+                ForeColor = UiTheme.TextPrimary,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(leftMargin, 460),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            Controls.Add(lblUpdateSection);
+
+            var btnCheckUpdate = new Guna2Button
+            {
+                Text = "🔄  Güncellemeleri Denetle",
+                Location = new Point(leftMargin, 496),
+                Size = new Size(fieldWidth, 42),
+                BorderRadius = 10,
+                FillColor = UiTheme.SidebarSelected,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                Animated = true
+            };
+            btnCheckUpdate.HoverState.FillColor = ControlPaint.Dark(UiTheme.SidebarSelected, 0.08f);
+            btnCheckUpdate.Click += BtnCheckUpdate_Click;
+            Controls.Add(btnCheckUpdate);
         }
 
         private void BtnSaveUsername_Click(object sender, EventArgs e)
@@ -206,6 +242,52 @@ namespace Barcoded_Warehouse_Stock_Tracking
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void BtnCheckUpdate_Click(object sender, EventArgs e)
+        {
+            var btn = sender as Guna2Button;
+            if (btn != null)
+            {
+                btn.Enabled = false;
+                btn.Text = "🔄  Kontrol Ediliyor...";
+            }
+
+            try
+            {
+                var updateInfo = await AutoUpdater.CheckForUpdatesAsync();
+                if (updateInfo != null && updateInfo.IsUpdateAvailable)
+                {
+                    string notes = string.IsNullOrWhiteSpace(updateInfo.ReleaseNotes) ? "Detay belirtilmemiş." : updateInfo.ReleaseNotes;
+                    string msg = $"Poseidon için yeni bir güncelleme mevcut!\n\n" +
+                                 $"Mevcut Sürüm: v{updateInfo.CurrentVersion}\n" +
+                                 $"Yeni Sürüm: v{updateInfo.LatestVersion}\n\n" +
+                                 $"Güncelleme Notları:\n{notes}\n\n" +
+                                 $"Güncelleme dosyasını şimdi indirip kurmak istiyor musunuz?";
+
+                    if (MessageBox.Show(msg, "Yeni Güncelleme Mevcut", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    {
+                        var dlForm = new FrmUpdateDownload(updateInfo.DownloadUrl, updateInfo.LatestVersion);
+                        dlForm.ShowDialog();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show($"Sisteminiz güncel.\nMevcut Sürüm: v{Application.ProductVersion}", "Güncelleme Kontrolü", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Güncelleme kontrolü sırasında hata oluştu:\n" + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (btn != null)
+                {
+                    btn.Enabled = true;
+                    btn.Text = "🔄  Güncellemeleri Denetle";
+                }
             }
         }
     }

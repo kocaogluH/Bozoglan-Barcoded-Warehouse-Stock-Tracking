@@ -98,6 +98,10 @@
     <Compile Include="Database.cs" />
     <Compile Include="UiTheme.cs" />
     <Compile Include="AppPaths.cs" />
+    <Compile Include="AutoUpdater.cs" />
+    <Compile Include="FrmUpdateDownload.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Security.cs" />
     <Compile Include="Session.cs" />
     <Compile Include="FrmPos.cs">

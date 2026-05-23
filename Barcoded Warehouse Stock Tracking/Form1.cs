@@ -139,6 +139,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             ApplyLightChromeToDataTabs();
 
             RefreshAll();
+            CheckForUpdatesOnStartup();
         }
 
         private void ApplyLightChromeToDataTabs()
@@ -782,5 +783,32 @@ namespace Barcoded_Warehouse_Stock_Tracking
         private void BtnReturns_Click(object sender, EventArgs e) => OpenChildPage("İade / İptal", new FrmReturns());
         private void BtnCustomers_Click(object sender, EventArgs e) => OpenChildPage("Müşteriler", new FrmCustomers());
         private void BtnReports_Click(object sender, EventArgs e) => OpenChildPage("Raporlar", new FrmReports());
+
+        private async void CheckForUpdatesOnStartup()
+        {
+            try
+            {
+                var updateInfo = await AutoUpdater.CheckForUpdatesAsync();
+                if (updateInfo != null && updateInfo.IsUpdateAvailable)
+                {
+                    string notes = string.IsNullOrWhiteSpace(updateInfo.ReleaseNotes) ? "Detay belirtilmemiş." : updateInfo.ReleaseNotes;
+                    string msg = $"Poseidon için yeni bir güncelleme mevcut!\n\n" +
+                                 $"Mevcut Sürüm: v{updateInfo.CurrentVersion}\n" +
+                                 $"Yeni Sürüm: v{updateInfo.LatestVersion}\n\n" +
+                                 $"Güncelleme Notları:\n{notes}\n\n" +
+                                 $"Güncelleme dosyasını şimdi indirip kurmak istiyor musunuz?";
+
+                    if (MessageBox.Show(msg, "Yeni Güncelleme Mevcut", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    {
+                        var dlForm = new FrmUpdateDownload(updateInfo.DownloadUrl, updateInfo.LatestVersion);
+                        dlForm.ShowDialog();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Startup update check failed: " + ex.Message);
+            }
+        }
     }
 }

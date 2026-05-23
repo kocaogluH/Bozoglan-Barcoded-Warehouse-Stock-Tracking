@@ -1,0 +1,39 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.1
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.2
+
+    - name: Restore NuGet Packages
+      run: nuget restore "Barcoded Warehouse Stock Tracking.sln"
+
+    - name: Build Solution
+      run: msbuild "Barcoded Warehouse Stock Tracking.sln" /p:Configuration=Release /p:Platform="Any CPU"
+
+    - name: Compile Installer with Inno Setup
+      run: |
+        iscc "Barcoded Warehouse Stock Tracking\setup_script.iss"
+
+    - name: Create GitHub Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "Barcoded Warehouse Stock Tracking/Installer/Poseidon_Setup.exe"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        draft: false
+        prerelease: false
+        generateReleaseNotes: true
