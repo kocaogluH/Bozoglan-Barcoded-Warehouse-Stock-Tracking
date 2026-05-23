@@ -16,6 +16,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; Derlenen dosyaları kopyalamak için (Release klasörü üzerinden)
 Source: "bin\Release\Barcoded Warehouse Stock Tracking.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "bin\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "bin\Release\*.config"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Poseidon Depo ve Stok"; Filename: "{app}\Barcoded Warehouse Stock Tracking.exe"
