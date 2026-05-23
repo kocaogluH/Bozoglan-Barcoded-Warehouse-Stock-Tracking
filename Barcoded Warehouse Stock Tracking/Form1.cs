@@ -147,8 +147,9 @@ namespace Barcoded_Warehouse_Stock_Tracking
             tabProducts.BackColor = UiTheme.MainBackground;
             tabMovements.BackColor = UiTheme.MainBackground;
 
-            foreach (var tb in new[] { txtBarcode, txtName, txtPrice })
+            foreach (var tb in new[] { txtBarcode, txtName, txtPrice, txtInitialStock })
             {
+                if (tb == null) continue;
                 tb.FillColor = UiTheme.InputFill;
                 tb.ForeColor = UiTheme.TextPrimary;
                 tb.BorderColor = UiTheme.InputBorder;
@@ -691,12 +692,34 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 txtBarcode.Clear();
                 txtName.Clear();
                 txtPrice.Clear();
+                if (txtInitialStock != null) txtInitialStock.Clear();
                 txtBarcode.Focus();
                 return;
             }
 
             var p = new Product { Barcode = barcode, Name = name, UnitPrice = (double)price };
             _productService.AddProduct(p);
+            
+            // Eğer başlangıç stoğu girilmişse, otomatik hareket ekle
+            if (txtInitialStock != null && int.TryParse(txtInitialStock.Text.Trim(), out int initialQty) && initialQty > 0)
+            {
+                p = _productService.GetProductByBarcode(barcode); // ID'sini almak için tekrar çekiyoruz
+                p.StockQty = initialQty;
+                _productService.UpdateProduct(p);
+                
+                _context.StockMovements.Add(new StockMovement
+                {
+                    ProductId = p.Id,
+                    BarcodeSnapshot = barcode,
+                    Quantity = initialQty,
+                    Type = "Giriş",
+                    Reason = "Açılış Stoğu",
+                    RefType = "Manual",
+                    CreatedAt = DateTime.Now,
+                    CreatedByUserId = Session.UserId
+                });
+                _context.SaveChanges();
+            }
             
             // Zen.Barcode Yazdırma Modülü
             try
@@ -721,6 +744,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             txtBarcode.Clear();
             txtName.Clear();
             txtPrice.Clear();
+            if (txtInitialStock != null) txtInitialStock.Clear();
             txtBarcode.Focus();
         }
 

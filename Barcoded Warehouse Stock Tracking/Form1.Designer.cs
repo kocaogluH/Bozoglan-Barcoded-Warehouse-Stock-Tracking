@@ -72,9 +72,11 @@ namespace Barcoded_Warehouse_Stock_Tracking
             this.tabProducts.Controls.Add(this.btnReturns);
             this.tabProducts.Controls.Add(this.btnCustomers);
             this.tabProducts.Controls.Add(this.btnReports);
+            this.tabProducts.Controls.Add(this.txtInitialStock);
             this.tabProducts.Controls.Add(this.txtPrice);
             this.tabProducts.Controls.Add(this.txtName);
             this.tabProducts.Controls.Add(this.txtBarcode);
+            this.tabProducts.Controls.Add(this.lblInitialStock);
             this.tabProducts.Controls.Add(this.lblPrice);
             this.tabProducts.Controls.Add(this.lblName);
             this.tabProducts.Controls.Add(this.lblBarcode);
@@ -109,11 +111,11 @@ namespace Barcoded_Warehouse_Stock_Tracking
             this.dgvProducts.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvProducts.EnableHeadersVisualStyles = false;
             this.dgvProducts.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(55)))), ((int)(((byte)(90)))));
-            this.dgvProducts.Location = new System.Drawing.Point(18, 190);
+            this.dgvProducts.Location = new System.Drawing.Point(18, 240);
             this.dgvProducts.Name = "dgvProducts";
             this.dgvProducts.ReadOnly = true;
             this.dgvProducts.RowHeadersVisible = false;
-            this.dgvProducts.Size = new System.Drawing.Size(1056, 400);
+            this.dgvProducts.Size = new System.Drawing.Size(1056, 350);
             this.dgvProducts.TabIndex = 7;
             // 
             // btnAdd
@@ -268,6 +270,35 @@ namespace Barcoded_Warehouse_Stock_Tracking
             this.lblBarcode.Size = new System.Drawing.Size(50, 15);
             this.lblBarcode.TabIndex = 0;
             this.lblBarcode.Text = "Barkod:";
+            // 
+            // txtInitialStock
+            // 
+            this.txtInitialStock.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(233)))), ((int)(((byte)(69)))), ((int)(((byte)(96)))));
+            this.txtInitialStock.BorderRadius = 8;
+            this.txtInitialStock.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.txtInitialStock.DefaultText = "";
+            this.txtInitialStock.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(45)))), ((int)(((byte)(78)))));
+            this.txtInitialStock.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.txtInitialStock.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(234)))), ((int)(((byte)(234)))), ((int)(((byte)(234)))));
+            this.txtInitialStock.Location = new System.Drawing.Point(110, 170);
+            this.txtInitialStock.Name = "txtInitialStock";
+            this.txtInitialStock.PasswordChar = '\0';
+            this.txtInitialStock.PlaceholderForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(140)))), ((int)(((byte)(140)))), ((int)(((byte)(160)))));
+            this.txtInitialStock.PlaceholderText = "Açılış Stoğu (İsteğe bağlı)";
+            this.txtInitialStock.SelectedText = "";
+            this.txtInitialStock.Size = new System.Drawing.Size(260, 43);
+            this.txtInitialStock.TabIndex = 6;
+            // 
+            // lblInitialStock
+            // 
+            this.lblInitialStock.AutoSize = true;
+            this.lblInitialStock.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblInitialStock.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(140)))), ((int)(((byte)(140)))), ((int)(((byte)(160)))));
+            this.lblInitialStock.Location = new System.Drawing.Point(18, 164);
+            this.lblInitialStock.Name = "lblInitialStock";
+            this.lblInitialStock.Size = new System.Drawing.Size(73, 15);
+            this.lblInitialStock.TabIndex = 11;
+            this.lblInitialStock.Text = "Başlan. Stok:";
             // 
             // tabMovements
             // 
@@ -465,9 +496,11 @@ namespace Barcoded_Warehouse_Stock_Tracking
         private Guna2TextBox txtPrice;
         private Guna2TextBox txtName;
         private Guna2TextBox txtBarcode;
+        private Guna2TextBox txtInitialStock;
         private System.Windows.Forms.Label lblPrice;
         private System.Windows.Forms.Label lblName;
         private System.Windows.Forms.Label lblBarcode;
+        private System.Windows.Forms.Label lblInitialStock;
         private System.Windows.Forms.TabPage tabMovements;
         private System.Windows.Forms.DataGridView dgvMovements;
         private Guna2Button btnAddMovement;
