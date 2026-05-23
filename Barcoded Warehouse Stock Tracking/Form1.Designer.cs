@@ -31,9 +31,11 @@ namespace Barcoded_Warehouse_Stock_Tracking
             this.txtPrice = new Guna.UI2.WinForms.Guna2TextBox();
             this.txtName = new Guna.UI2.WinForms.Guna2TextBox();
             this.txtBarcode = new Guna.UI2.WinForms.Guna2TextBox();
+            this.txtInitialStock = new Guna.UI2.WinForms.Guna2TextBox();
             this.lblPrice = new System.Windows.Forms.Label();
             this.lblName = new System.Windows.Forms.Label();
             this.lblBarcode = new System.Windows.Forms.Label();
+            this.lblInitialStock = new System.Windows.Forms.Label();
             this.tabMovements = new System.Windows.Forms.TabPage();
             this.dgvMovements = new System.Windows.Forms.DataGridView();
             this.btnAddMovement = new Guna.UI2.WinForms.Guna2Button();
