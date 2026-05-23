@@ -5,7 +5,6 @@ DefaultDirName={pf}\PoseidonYazilim
 DefaultGroupName=Poseidon Yazilim
 OutputDir=.\Installer
 OutputBaseFilename=Poseidon_Setup
-SetupIconFile=app_logo.ico
 Compression=lzma
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64
