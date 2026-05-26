@@ -1,6 +1,6 @@
 [Setup]
 AppName=Poseidon Depo ve Stok Yönetimi
-AppVersion=1.0.0
+AppVersion=1.0.7
 DefaultDirName={pf}\PoseidonYazilim
 DefaultGroupName=Poseidon Yazilim
 OutputDir=.\Installer
