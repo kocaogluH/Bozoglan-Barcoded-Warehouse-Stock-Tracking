@@ -721,31 +721,29 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 _context.SaveChanges();
             }
             
-            // Zen.Barcode Yazdırma Modülü
+            // Metin kutularını hemen temizle ve Grid'i yenile
+            txtBarcode.Clear();
+            txtName.Clear();
+            txtPrice.Clear();
+            if (txtInitialStock != null) txtInitialStock.Clear();
+            RefreshAll();
+            txtBarcode.Focus();
+
+            // Zen.Barcode Yazdırma ve Modern Önizleme Modülü
             try
             {
                 Zen.Barcode.Code128BarcodeDraw br = Zen.Barcode.BarcodeDrawFactory.Code128WithChecksum;
                 System.Drawing.Image img = br.Draw(barcode, 60);
 
-                var f = new Form { Text = "Otomatik Barkod Etiketi: " + barcode, Size = new Size(300, 200), StartPosition = FormStartPosition.CenterParent };
-                var pb = new PictureBox { Image = img, SizeMode = PictureBoxSizeMode.CenterImage, Dock = DockStyle.Fill };
-                var lbl = new Label { Text = name + " - " + priceText + " TL", Dock = DockStyle.Bottom, TextAlign = ContentAlignment.MiddleCenter, Font = new System.Drawing.Font("Segoe UI", 12, FontStyle.Bold) };
-                f.Controls.Add(pb);
-                f.Controls.Add(lbl);
-                f.ShowDialog();
+                using (var f = new FrmBarcodePreview(barcode, name, priceText, img))
+                {
+                    f.ShowDialog();
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Barkod gösteriminde hata: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-
-            RefreshAll();
-
-            txtBarcode.Clear();
-            txtName.Clear();
-            txtPrice.Clear();
-            if (txtInitialStock != null) txtInitialStock.Clear();
-            txtBarcode.Focus();
         }
 
         private void btnAddMovement_Click(object sender, EventArgs e)

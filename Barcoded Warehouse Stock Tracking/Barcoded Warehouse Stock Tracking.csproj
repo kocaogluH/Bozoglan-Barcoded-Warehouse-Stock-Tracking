@@ -102,6 +102,9 @@
     <Compile Include="FrmUpdateDownload.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="FrmBarcodePreview.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Security.cs" />
     <Compile Include="Session.cs" />
     <Compile Include="FrmPos.cs">
@@ -163,6 +166,9 @@
       <Link>NuGet.Config</Link>
     </None>
     <Content Include="app_logo.ico" />
+    <Content Include="Resources\poseidon_logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">

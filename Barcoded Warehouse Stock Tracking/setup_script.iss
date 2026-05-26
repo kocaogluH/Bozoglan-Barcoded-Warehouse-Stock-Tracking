@@ -17,6 +17,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "bin\Release\Barcoded Warehouse Stock Tracking.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "bin\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "bin\Release\*.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Resources\poseidon_logo.png"; DestDir: "{app}\Resources"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Poseidon Depo ve Stok"; Filename: "{app}\Barcoded Warehouse Stock Tracking.exe"

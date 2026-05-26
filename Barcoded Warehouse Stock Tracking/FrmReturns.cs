@@ -90,6 +90,8 @@ namespace Barcoded_Warehouse_Stock_Tracking
             typeof(Control).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
                 ?.SetValue(_grid, true, null);
 
+            _grid.AutoGenerateColumns = false;
+            _grid.Columns.Add(new DataGridViewCheckBoxColumn { DataPropertyName = "IsSelected", HeaderText = "Seç", Width = 60, ReadOnly = false });
             _grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Barcode",    HeaderText = "Barkod",     Width = 150, ReadOnly = true });
             _grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Name",       HeaderText = "Ürün",       AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = true });
             _grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "UnitPrice",  HeaderText = "Fiyat",      Width = 100, ReadOnly = true });
@@ -104,7 +106,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
             var info = new Label
             {
-                Text = "ℹ  Sadece 'Completed' satışlardan iade yapılır. Kısmi iade desteklenir.",
+                Text = "ℹ  İade etmek istediğiniz ürünleri sol sütundan 'Seç' kutucuğu ile işaretleyip iade adedini yazın.",
                 ForeColor = TextDim, Font = new Font("Segoe UI", 9, FontStyle.Italic),
                 AutoSize = true, Location = new Point(20, 35)
             };
@@ -129,22 +131,40 @@ namespace Barcoded_Warehouse_Stock_Tracking
             if (string.IsNullOrEmpty(saleNo)) return;
             _dt = Database.GetSaleItemsForReturn(saleNo);
             if (_dt.Rows.Count == 0) { MessageBox.Show("Satış bulunamadı!"); return; }
+            
             if (!_dt.Columns.Contains("ReturnQty")) _dt.Columns.Add("ReturnQty", typeof(int));
-            foreach (DataRow r in _dt.Rows) r["ReturnQty"] = 0;
+            if (!_dt.Columns.Contains("IsSelected")) _dt.Columns.Add("IsSelected", typeof(bool));
+            
+            foreach (DataRow r in _dt.Rows)
+            {
+                r["ReturnQty"] = 0;
+                r["IsSelected"] = false;
+            }
             _grid.DataSource = _dt;
         }
 
         private void SaveReturn()
         {
+            _grid.EndEdit();
             if (_dt == null || _grid.Rows.Count == 0) return;
             try
             {
                 var items = new System.Collections.Generic.List<Database.ReturnItemInput>();
                 foreach (DataRow row in _dt.Rows)
                 {
-                    int rq = Convert.ToInt32(row["ReturnQty"]);
-                    if (rq > 0)
+                    bool isSelected = row["IsSelected"] != DBNull.Value && Convert.ToBoolean(row["IsSelected"]);
+                    if (isSelected)
                     {
+                        int rq = row["ReturnQty"] != DBNull.Value ? Convert.ToInt32(row["ReturnQty"]) : 0;
+                        if (rq <= 0)
+                        {
+                            // Eğer seçildiyse fakat adet yazılmadıysa, kalan iade edilebilir miktarın tamamını otomatik ata
+                            int sold = Convert.ToInt32(row["SoldQty"]);
+                            int ret = Convert.ToInt32(row["ReturnedQty"]);
+                            rq = sold - ret;
+                            if (rq <= 0) continue;
+                        }
+
                         items.Add(new Database.ReturnItemInput
                         {
                             SaleItemId = Convert.ToInt64(row["SaleItemId"]),
@@ -155,12 +175,21 @@ namespace Barcoded_Warehouse_Stock_Tracking
                         });
                     }
                 }
-                if (items.Count == 0) return;
+                
+                if (items.Count == 0)
+                {
+                    MessageBox.Show("Lütfen iade edilecek ürünleri seçin ve iade adedini belirtin.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                
                 Database.CreateReturn(_txtSaleNo.Text.Trim(), "RET" + DateTime.Now.Ticks, items, Session.UserId ?? 0);
-                MessageBox.Show("İade işlemi tamamlandı.");
+                MessageBox.Show("İade işlemi başarıyla tamamlandı.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadSale();
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            catch (Exception ex) 
+            { 
+                MessageBox.Show(ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error); 
+            }
         }
     }
 }

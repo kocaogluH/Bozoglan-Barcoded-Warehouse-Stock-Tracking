@@ -69,17 +69,13 @@ namespace Barcoded_Warehouse_Stock_Tracking
                             info.DownloadUrl = downloadUrl;
                             info.ReleaseNotes = releaseNotes;
 
-                            // Sürüm karşılaştırması
-                            string cleanLatest = Regex.Replace(latestVersionStr, @"^[^\d]+", ""); // "v1.0.1" -> "1.0.1"
-                            string cleanCurrent = Regex.Replace(info.CurrentVersion, @"^[^\d]+", "");
+                            // Sürüm karşılaştırması (4 bileşenli normalleştirme ile)
+                            Version latestVer = NormalizeVersion(latestVersionStr);
+                            Version currentVer = NormalizeVersion(info.CurrentVersion);
 
-                            if (Version.TryParse(cleanLatest, out Version latestVer) &&
-                                Version.TryParse(cleanCurrent, out Version currentVer))
+                            if (latestVer > currentVer)
                             {
-                                if (latestVer > currentVer)
-                                {
-                                    info.IsUpdateAvailable = true;
-                                }
+                                info.IsUpdateAvailable = true;
                             }
                         }
                     }
@@ -91,6 +87,21 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
                 return info;
             });
+        }
+
+        private static Version NormalizeVersion(string versionStr)
+        {
+            if (string.IsNullOrWhiteSpace(versionStr))
+                return new Version(0, 0, 0, 0);
+
+            string clean = Regex.Replace(versionStr, @"^[^\d]+", ""); // "v1.0.1" -> "1.0.1"
+            var parts = clean.Split('.');
+            int major = parts.Length > 0 && int.TryParse(parts[0], out int mj) ? mj : 0;
+            int minor = parts.Length > 1 && int.TryParse(parts[1], out int mn) ? mn : 0;
+            int build = parts.Length > 2 && int.TryParse(parts[2], out int bd) ? bd : 0;
+            int revision = parts.Length > 3 && int.TryParse(parts[3], out int rv) ? rv : 0;
+
+            return new Version(major, minor, build, revision);
         }
     }
 }
