@@ -29,8 +29,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 Directory.CreateDirectory(appDir);
                 AppDomain.CurrentDomain.SetData("DataDirectory", appDir);
 
-                Database.EnsureDatabase();
-                
+                // EnsureDatabase LoginForm içinde arka planda çalışır — burada bekleme yok
                 using (var loginForm = new LoginForm())
                 {
                     if (loginForm.ShowDialog() == DialogResult.OK)

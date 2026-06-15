@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Guna.UI2.WinForms;
 
@@ -12,6 +13,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
         private readonly Guna2TextBox _txtPass  = new Guna2TextBox();
         private readonly Guna2Button  _btnLogin = new Guna2Button();
         private readonly Label        _lblError = new Label();
+        private bool _dbReady = false;
 
         public LoginForm()
         {
@@ -180,7 +182,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _txtPass.TextOffset         = new Point(10, 0);
 
             // btnLogin: y=224, h=50  →  alt=276  (204+20 boşluk=224)
-            _btnLogin.Text              = "SİSTEME GİRİŞ YAP";
+            _btnLogin.Text              = "Sistem hazırlanıyor...";
             _btnLogin.Size              = new Size(TW, 55);
             _btnLogin.Location          = new Point(TX, 275);
             _btnLogin.BorderRadius      = 10;
@@ -190,7 +192,8 @@ namespace Barcoded_Warehouse_Stock_Tracking
             _btnLogin.ForeColor         = Color.White;
             _btnLogin.Cursor            = Cursors.Hand;
             _btnLogin.Animated          = true;
-            _btnLogin.Click            += (_, __) => DoLogin();
+            _btnLogin.Enabled           = false;   // DB hazır olana kadar kilitli
+            _btnLogin.Click            += async (_, __) => await DoLoginAsync();
 
             // lblError: y=292, h=22  →  alt=314  (276+16 boşluk=292)
             // Kart yüksekliği 370  →  314 < 370 ✓
@@ -232,10 +235,43 @@ namespace Barcoded_Warehouse_Stock_Tracking
             AcceptButton = _btnLogin;
         }
 
-        private void DoLogin()
+        // ── Başlangıç: DB arka planda hazırlanır ─────────────────────────────
+        protected override async void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            try
+            {
+                await Task.Run(() => Database.EnsureDatabase());
+                _dbReady = true;
+                _btnLogin.Text    = "SİSTEME GİRİŞ YAP";
+                _btnLogin.Enabled = true;
+                _txtUser.Focus();
+            }
+            catch (Exception ex)
+            {
+                _lblError.ForeColor = UiTheme.Danger;
+                _lblError.Text      = "Veritabanı hatası!";
+                _btnLogin.Text      = "Hata — Yeniden Dene";
+                _btnLogin.Enabled   = true;
+                _btnLogin.Click    -= null; // varolan handler'ı koru, retry ekle
+                MessageBox.Show(
+                    "Veritabanı başlatılamadı:\n\n" + ex.Message,
+                    "Başlatma Hatası",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private async Task DoLoginAsync()
         {
             var user = _txtUser.Text.Trim();
             var pass = _txtPass.Text;
+
+            if (!_dbReady)
+            {
+                _lblError.Text = "Sistem henüz hazır değil, lütfen bekleyin.";
+                return;
+            }
 
             if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
             {
@@ -243,14 +279,21 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 return;
             }
 
+            // UI'yi kilitle, geri bildirim ver
+            _btnLogin.Enabled = false;
+            _btnLogin.Text    = "Giriş yapılıyor...";
+            _lblError.Text    = "";
+
             try
             {
-                var result = Database.AuthenticateUser(user, pass);
+                // DB sorgusu + PBKDF2 doğrulamasını arka plana al
+                var result = await Task.Run(() => Database.AuthenticateUser(user, pass));
+
                 if (result.HasValue)
                 {
-                    Session.UserId   = result.Value.Id;
-                    Session.Username = user;
-                    Session.Role     = result.Value.Role;
+                    Session.UserId    = result.Value.Id;
+                    Session.Username  = user;
+                    Session.Role      = result.Value.Role;
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
@@ -265,6 +308,12 @@ namespace Barcoded_Warehouse_Stock_Tracking
             {
                 _lblError.Text = "Giriş sırasında hata oluştu.";
                 MessageBox.Show(ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                // Her durumda butonu geri aç
+                _btnLogin.Enabled = true;
+                _btnLogin.Text    = "SİSTEME GİRİŞ YAP";
             }
         }
     }

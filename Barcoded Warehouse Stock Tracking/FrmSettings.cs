@@ -12,6 +12,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
         private Guna2TextBox txtConfirmPassword;
         private Guna2Button btnSaveUsername;
         private Guna2Button btnSavePassword;
+        private Guna2Button btnCheckUpdate;
 
         public FrmSettings()
         {
@@ -22,19 +23,16 @@ namespace Barcoded_Warehouse_Stock_Tracking
         {
             this.Text = "Ayarlar";
             this.BackColor = UiTheme.MainBackground;
-            this.Size = new Size(500, 580);
+            this.Size = new Size(900, 650);
             this.FormBorderStyle = FormBorderStyle.None;
-
-            int leftMargin = 30;
-            int fieldWidth = 400;
 
             // ── Başlık ──
             var lblTitle = new Label
             {
-                Text = "⚙  Hesap Ayarları",
-                ForeColor = UiTheme.Primary,
-                Font = new Font("Segoe UI", 18, FontStyle.Bold),
-                Location = new Point(leftMargin, 20),
+                Text = "⚙  Sistem ve Hesap Ayarları",
+                ForeColor = UiTheme.Sidebar,
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                Location = new Point(40, 25),
                 AutoSize = true,
                 BackColor = Color.Transparent
             };
@@ -43,159 +41,232 @@ namespace Barcoded_Warehouse_Stock_Tracking
             var divider = new Label
             {
                 BackColor = UiTheme.GridLine,
-                Size = new Size(fieldWidth, 1),
-                Location = new Point(leftMargin, 60)
+                Size = new Size(820, 1),
+                Location = new Point(40, 75)
             };
             Controls.Add(divider);
 
-            // ── Kullanıcı Adı Bölümü ──
+            // ── SOL KART: Kullanıcı Adı Güncelleme ──
+            var pnlUserCard = new Guna2Panel
+            {
+                Size = new Size(390, 260),
+                Location = new Point(40, 100),
+                FillColor = Color.White,
+                BorderRadius = 16,
+                ShadowDecoration = {
+                    Enabled = true,
+                    Color = Color.FromArgb(40, 0, 0, 0),
+                    Depth = 12,
+                    BorderRadius = 16
+                }
+            };
+            Controls.Add(pnlUserCard);
+
             var lblUserSection = new Label
             {
                 Text = "Kullanıcı Adı Değiştir",
                 ForeColor = UiTheme.TextPrimary,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                Location = new Point(leftMargin, 80),
+                Location = new Point(20, 20),
                 AutoSize = true,
                 BackColor = Color.Transparent
             };
-            Controls.Add(lblUserSection);
+            pnlUserCard.Controls.Add(lblUserSection);
+
+            var lblUserDesc = new Label
+            {
+                Text = "Sistemde görünen giriş kullanıcı adınızı güncelleyin.",
+                ForeColor = UiTheme.TextMuted,
+                Font = new Font("Segoe UI", 9),
+                Location = new Point(20, 48),
+                Size = new Size(350, 35),
+                BackColor = Color.Transparent
+            };
+            pnlUserCard.Controls.Add(lblUserDesc);
 
             txtUsername = new Guna2TextBox
             {
                 PlaceholderText = "Yeni Kullanıcı Adı",
                 Text = Session.Username ?? "",
-                Location = new Point(leftMargin, 110),
-                Size = new Size(fieldWidth, 42),
+                Location = new Point(20, 95),
+                Size = new Size(350, 45),
                 BorderRadius = 10,
-                FillColor = UiTheme.InputFill,
+                FillColor = UiTheme.SurfaceMuted,
                 ForeColor = UiTheme.TextPrimary,
                 BorderColor = UiTheme.InputBorder,
-                Font = new Font("Segoe UI", 11),
-                PlaceholderForeColor = UiTheme.TextMuted
+                Font = new Font("Segoe UI", 10.5f),
+                PlaceholderForeColor = UiTheme.TextMuted,
+                TextOffset = new Point(10, 0)
             };
-            Controls.Add(txtUsername);
+            pnlUserCard.Controls.Add(txtUsername);
 
             btnSaveUsername = new Guna2Button
             {
                 Text = "Kullanıcı Adını Güncelle",
-                Location = new Point(leftMargin, 162),
-                Size = new Size(fieldWidth, 42),
+                Location = new Point(20, 180),
+                Size = new Size(350, 45),
                 BorderRadius = 10,
                 FillColor = UiTheme.Primary,
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 Cursor = Cursors.Hand,
                 Animated = true
             };
             btnSaveUsername.HoverState.FillColor = ControlPaint.Dark(UiTheme.Primary, 0.08f);
             btnSaveUsername.Click += BtnSaveUsername_Click;
-            Controls.Add(btnSaveUsername);
+            pnlUserCard.Controls.Add(btnSaveUsername);
 
-            // ── Şifre Bölümü ──
-            var divider2 = new Label
+
+            // ── SAĞ KART: Şifre Değiştirme ──
+            var pnlPassCard = new Guna2Panel
             {
-                BackColor = UiTheme.GridLine,
-                Size = new Size(fieldWidth, 1),
-                Location = new Point(leftMargin, 224)
+                Size = new Size(390, 340),
+                Location = new Point(470, 100),
+                FillColor = Color.White,
+                BorderRadius = 16,
+                ShadowDecoration = {
+                    Enabled = true,
+                    Color = Color.FromArgb(40, 0, 0, 0),
+                    Depth = 12,
+                    BorderRadius = 16
+                }
             };
-            Controls.Add(divider2);
+            Controls.Add(pnlPassCard);
 
             var lblPassSection = new Label
             {
                 Text = "Şifre Değiştir",
                 ForeColor = UiTheme.TextPrimary,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                Location = new Point(leftMargin, 244),
+                Location = new Point(20, 20),
                 AutoSize = true,
                 BackColor = Color.Transparent
             };
-            Controls.Add(lblPassSection);
+            pnlPassCard.Controls.Add(lblPassSection);
+
+            var lblPassDesc = new Label
+            {
+                Text = "Hesabınızın güvenliği için güçlü bir şifre belirleyin.",
+                ForeColor = UiTheme.TextMuted,
+                Font = new Font("Segoe UI", 9),
+                Location = new Point(20, 48),
+                Size = new Size(350, 35),
+                BackColor = Color.Transparent
+            };
+            pnlPassCard.Controls.Add(lblPassDesc);
 
             txtNewPassword = new Guna2TextBox
             {
                 PlaceholderText = "Yeni Şifre",
                 UseSystemPasswordChar = true,
-                Location = new Point(leftMargin, 278),
-                Size = new Size(fieldWidth, 42),
+                Location = new Point(20, 95),
+                Size = new Size(350, 45),
                 BorderRadius = 10,
-                FillColor = UiTheme.InputFill,
+                FillColor = UiTheme.SurfaceMuted,
                 ForeColor = UiTheme.TextPrimary,
                 BorderColor = UiTheme.InputBorder,
-                Font = new Font("Segoe UI", 11),
-                PlaceholderForeColor = UiTheme.TextMuted
+                Font = new Font("Segoe UI", 10.5f),
+                PlaceholderForeColor = UiTheme.TextMuted,
+                TextOffset = new Point(10, 0)
             };
-            Controls.Add(txtNewPassword);
+            pnlPassCard.Controls.Add(txtNewPassword);
 
             txtConfirmPassword = new Guna2TextBox
             {
                 PlaceholderText = "Yeni Şifre (Tekrar)",
                 UseSystemPasswordChar = true,
-                Location = new Point(leftMargin, 330),
-                Size = new Size(fieldWidth, 42),
+                Location = new Point(20, 155),
+                Size = new Size(350, 45),
                 BorderRadius = 10,
-                FillColor = UiTheme.InputFill,
+                FillColor = UiTheme.SurfaceMuted,
                 ForeColor = UiTheme.TextPrimary,
                 BorderColor = UiTheme.InputBorder,
-                Font = new Font("Segoe UI", 11),
-                PlaceholderForeColor = UiTheme.TextMuted
+                Font = new Font("Segoe UI", 10.5f),
+                PlaceholderForeColor = UiTheme.TextMuted,
+                TextOffset = new Point(10, 0)
             };
-            Controls.Add(txtConfirmPassword);
+            pnlPassCard.Controls.Add(txtConfirmPassword);
 
             btnSavePassword = new Guna2Button
             {
                 Text = "Şifreyi Güncelle",
-                Location = new Point(leftMargin, 386),
-                Size = new Size(fieldWidth, 42),
+                Location = new Point(20, 260),
+                Size = new Size(350, 45),
                 BorderRadius = 10,
                 FillColor = UiTheme.Success,
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 Cursor = Cursors.Hand,
                 Animated = true
             };
             btnSavePassword.HoverState.FillColor = ControlPaint.Dark(UiTheme.Success, 0.08f);
             btnSavePassword.Click += BtnSavePassword_Click;
-            Controls.Add(btnSavePassword);
+            pnlPassCard.Controls.Add(btnSavePassword);
 
-            // ── Güncelleme Bölümü ──
-            var divider3 = new Label
+
+            // ── SİSTEM BÖLÜMÜ (GÜNCELLEME): SOL ALT KART ──
+            var pnlSystemCard = new Guna2Panel
             {
-                BackColor = UiTheme.GridLine,
-                Size = new Size(fieldWidth, 1),
-                Location = new Point(leftMargin, 444)
+                Size = new Size(390, 190),
+                Location = new Point(40, 390),
+                FillColor = Color.White,
+                BorderRadius = 16,
+                ShadowDecoration = {
+                    Enabled = true,
+                    Color = Color.FromArgb(40, 0, 0, 0),
+                    Depth = 12,
+                    BorderRadius = 16
+                }
             };
-            Controls.Add(divider3);
+            Controls.Add(pnlSystemCard);
 
-            var lblUpdateSection = new Label
+            var lblSystemSection = new Label
             {
                 Text = "Sistem Güncelleme",
                 ForeColor = UiTheme.TextPrimary,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                Location = new Point(leftMargin, 460),
+                Location = new Point(20, 15),
                 AutoSize = true,
                 BackColor = Color.Transparent
             };
-            Controls.Add(lblUpdateSection);
+            pnlSystemCard.Controls.Add(lblSystemSection);
 
-            var btnCheckUpdate = new Guna2Button
+            var lblSystemDesc = new Label
+            {
+                Text = "Uygulamanın en yeni sürümünü denetleyin ve güncellemeleri otomatik yükleyin.",
+                ForeColor = UiTheme.TextMuted,
+                Font = new Font("Segoe UI", 9),
+                Location = new Point(20, 42),
+                Size = new Size(350, 38),
+                BackColor = Color.Transparent
+            };
+            pnlSystemCard.Controls.Add(lblSystemDesc);
+
+            btnCheckUpdate = new Guna2Button
             {
                 Text = "🔄  Güncellemeleri Denetle",
-                Location = new Point(leftMargin, 496),
-                Size = new Size(fieldWidth, 42),
+                Location = new Point(20, 110),
+                Size = new Size(350, 45),
                 BorderRadius = 10,
                 FillColor = UiTheme.SidebarSelected,
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 Cursor = Cursors.Hand,
                 Animated = true
             };
             btnCheckUpdate.HoverState.FillColor = ControlPaint.Dark(UiTheme.SidebarSelected, 0.08f);
             btnCheckUpdate.Click += BtnCheckUpdate_Click;
-            Controls.Add(btnCheckUpdate);
+            pnlSystemCard.Controls.Add(btnCheckUpdate);
         }
 
         private void BtnSaveUsername_Click(object sender, EventArgs e)
         {
+            if (!Session.UserId.HasValue)
+            {
+                MessageBox.Show("Oturum açık değil. Lütfen sistemi yeniden başlatın.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             var newName = txtUsername.Text.Trim();
             if (string.IsNullOrWhiteSpace(newName))
             {
@@ -217,6 +288,12 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
         private void BtnSavePassword_Click(object sender, EventArgs e)
         {
+            if (!Session.UserId.HasValue)
+            {
+                MessageBox.Show("Oturum açık değil. Lütfen sistemi yeniden başlatın.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             var p1 = txtNewPassword.Text;
             var p2 = txtConfirmPassword.Text;
 
@@ -292,3 +369,4 @@ namespace Barcoded_Warehouse_Stock_Tracking
         }
     }
 }
+

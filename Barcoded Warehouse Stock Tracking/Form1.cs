@@ -202,18 +202,38 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 BorderRadius = 0
             };
 
-            var lblHead = new Label
+            // ── Miyuki Logo ──
+            var pbSidebarLogo = new PictureBox
             {
-                Text = "Yönetim Paneli",
-                ForeColor = Color.FromArgb(210, 200, 245),
-                Font = new System.Drawing.Font("Segoe UI", 8.5f),
-                AutoSize = true,
-                Location = new Point(20, 18),
+                Size = new Size(180, 150),
+                Location = new Point((236 - 180) / 2, 18),
+                SizeMode = PictureBoxSizeMode.Zoom,
                 BackColor = Color.Transparent
             };
-            _pnlSidebar.Controls.Add(lblHead);
 
-            int y = 52;
+            try
+            {
+                string exe = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
+                string proj = System.IO.Path.GetFullPath(System.IO.Path.Combine(exe, "..", ".."));
+                foreach (var p in new[]
+                {
+                    System.IO.Path.Combine(proj, "Resources", "miyuki_logo.png"),
+                    System.IO.Path.Combine(exe, "Resources", "miyuki_logo.png"),
+                    System.IO.Path.Combine(exe, "miyuki_logo.png")
+                })
+                {
+                    if (System.IO.File.Exists(p))
+                    {
+                        pbSidebarLogo.Image = System.Drawing.Image.FromFile(p);
+                        break;
+                    }
+                }
+            }
+            catch { }
+
+            _pnlSidebar.Controls.Add(pbSidebarLogo);
+
+            int y = 190;
             Guna2Button nav(string caption, Action act, bool transientAction = false)
             {
                 var b = new Guna2Button
@@ -519,7 +539,22 @@ namespace Barcoded_Warehouse_Stock_Tracking
             var mnuDelete = new ToolStripMenuItem("Sil");
             var mnuDetails = new ToolStripMenuItem("Detay Gör");
 
-            mnuEdit.Click += (s, e) => MessageBox.Show("Düzenleme özelliği yakında!");
+            mnuEdit.Click += (s, e) =>
+            {
+                if (dgvProducts.CurrentRow != null)
+                {
+                    var barcode = dgvProducts.CurrentRow.Cells["Barkod"].Value.ToString();
+                    var exact = _productService.GetProductByBarcode(barcode);
+                    if (exact != null)
+                    {
+                        txtBarcode.Text = exact.Barcode;
+                        txtName.Text = exact.Name;
+                        txtPrice.Text = exact.UnitPrice.ToString("0.00");
+                        if (txtInitialStock != null) txtInitialStock.Text = exact.StockQty.ToString();
+                        txtName.Focus();
+                    }
+                }
+            };
 
             mnuDelete.Click += (s, e) =>
             {
@@ -532,12 +567,36 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 if (dgvProducts.CurrentRow != null)
                 {
                     long id = Convert.ToInt64(dgvProducts.CurrentRow.Cells["No"].Value);
-                    _productService.DeleteProduct(id);
-                    RefreshAll();
+                    string name = dgvProducts.CurrentRow.Cells["Urun"].Value.ToString();
+                    if (MessageBox.Show($"'{name}' isimli ürünü silmek istediğinize emin misiniz?", "Ürün Sil", 
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        _productService.DeleteProduct(id);
+                        RefreshAll();
+                    }
                 }
             };
 
-            mnuDetails.Click += (s, e) => MessageBox.Show("Detay özelliği yakında!");
+            mnuDetails.Click += (s, e) =>
+            {
+                if (dgvProducts.CurrentRow != null)
+                {
+                    var barcode = dgvProducts.CurrentRow.Cells["Barkod"].Value.ToString();
+                    var exact = _productService.GetProductByBarcode(barcode);
+                    if (exact != null)
+                    {
+                        string detailText = $"Ürün Detay Bilgileri:\n\n" +
+                                            $"Barkod: {exact.Barcode}\n" +
+                                            $"Ürün Adı: {exact.Name}\n" +
+                                            $"Fiyat: {exact.UnitPrice:C2}\n" +
+                                            $"Mevcut Stok: {exact.StockQty} adet\n" +
+                                            $"Alış Fiyatı: {exact.CostPrice:C2}\n" +
+                                            $"KDV Oranı: %{exact.VatRate}\n";
+
+                        MessageBox.Show(detailText, "Ürün Detay Kartı", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            };
 
             menu.Items.Add(mnuEdit);
             menu.Items.Add(mnuDelete);

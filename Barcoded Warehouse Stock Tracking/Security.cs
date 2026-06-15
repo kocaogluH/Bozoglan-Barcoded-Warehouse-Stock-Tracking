@@ -6,7 +6,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
     public static class Security
     {
         // Format: {iterations}.{saltBase64}.{hashBase64}
-        public static string HashPassword(string password, int iterations = 100_000)
+        public static string HashPassword(string password, int iterations = 10_000)
         {
             if (password == null) throw new ArgumentNullException(nameof(password));
 
