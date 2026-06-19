@@ -3,6 +3,7 @@ using System.Data.Entity;
 using System.Data.SQLite;
 using SQLite.CodeFirst;
 using Barcoded_Warehouse_Stock_Tracking.Entities;
+using System.Linq;
 
 namespace Barcoded_Warehouse_Stock_Tracking.DataAccess
 {
@@ -37,6 +38,31 @@ namespace Barcoded_Warehouse_Stock_Tracking.DataAccess
 
                 // Varsayılan onarma kodumuz tabloyu daha evvel RefId olmadan yarattıysa diye güncelleme atılır
                 try { Database.ExecuteSqlCommand("ALTER TABLE StockMovements ADD COLUMN RefId INTEGER;"); } catch { }
+                
+                try 
+                {
+                    Database.ExecuteSqlCommand(@"
+                        CREATE TABLE IF NOT EXISTS Categories (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            Name TEXT NOT NULL,
+                            CreatedAt TEXT NOT NULL
+                        );
+                    ");
+                    // Seed data
+                    var count = Database.SqlQuery<int>("SELECT COUNT(*) FROM Categories").FirstOrDefault();
+                    if (count == 0)
+                    {
+                        Database.ExecuteSqlCommand(@"
+                            INSERT INTO Categories (Name, CreatedAt) VALUES ('Yemek Takımı', datetime('now'));
+                            INSERT INTO Categories (Name, CreatedAt) VALUES ('Bardak/Kadeh', datetime('now'));
+                            INSERT INTO Categories (Name, CreatedAt) VALUES ('Tencere/Tava', datetime('now'));
+                            INSERT INTO Categories (Name, CreatedAt) VALUES ('Çatal Bıçak', datetime('now'));
+                            INSERT INTO Categories (Name, CreatedAt) VALUES ('Dekorasyon/Aksesuar', datetime('now'));
+                            INSERT INTO Categories (Name, CreatedAt) VALUES ('Diğer', datetime('now'));
+                        ");
+                    }
+                } 
+                catch { }
             }
             catch { }
         }
@@ -59,6 +85,7 @@ namespace Barcoded_Warehouse_Stock_Tracking.DataAccess
             base.OnModelCreating(modelBuilder);
         }
 
+        public DbSet<Category> Categories { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<StockMovement> StockMovements { get; set; }

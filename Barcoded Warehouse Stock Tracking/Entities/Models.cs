@@ -18,6 +18,14 @@ namespace Barcoded_Warehouse_Stock_Tracking.Entities
         public int IsActive { get; set; } = 1;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
+    public class Category
+    {
+        [Key]
+        public long Id { get; set; }
+        [Required, StringLength(100)]
+        public string Name { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
 
     public class Product
     {

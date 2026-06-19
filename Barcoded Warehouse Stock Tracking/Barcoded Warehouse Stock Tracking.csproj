@@ -96,6 +96,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Database.cs" />
+    <Compile Include="FrmCategories.cs" />
     <Compile Include="UiTheme.cs" />
     <Compile Include="AppPaths.cs" />
     <Compile Include="AutoUpdater.cs" />
