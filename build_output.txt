@@ -1,0 +1,22 @@
+﻿.NET Framework için MSBuild sürüm 18.4.0+6e61e96ac
+Oluşturma başlatıldı: 19.06.2026 17:10:21.
+
+1 düğümünde "C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Bozoğlan Barcoded Warehouse Stock Tracking.sln" projesi (Rebuild hedef).
+ValidateSolutionConfiguration:
+  "Debug|Any CPU" çözüm yapılandırması oluşturuluyor.
+"C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Bozoğlan Barcoded Warehouse Stock Tracking.sln" projesi (1) 1 düğümünde "C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking.csproj" (2) oluşturuyor (Rebuild hedef).
+C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Microsoft\NuGet\18.0\Microsoft.NuGet.targets(198,5): error : Your project file doesn't list 'win-x86' as a "RuntimeIdentifier". You should add 'win-x86' to the "RuntimeIdentifiers" property in your project file and then re-run NuGet restore. [C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking.csproj]
+"C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking.csproj" Projesini Oluşturma İşlemi Tamamlandı (Rebuild hedef) -- BAŞARISIZ OLDU.
+"C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Bozoğlan Barcoded Warehouse Stock Tracking.sln" Projesini Oluşturma İşlemi Tamamlandı (Rebuild hedef) -- BAŞARISIZ OLDU.
+
+Oluşturma BAŞARISIZ OLDU.
+
+"C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Bozoğlan Barcoded Warehouse Stock Tracking.sln" (Rebuild hedefi) (1) ->
+"C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking.csproj" (Rebuild hedefi) (2) ->
+(ResolveNuGetPackageAssets hedefi) -> 
+  C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Microsoft\NuGet\18.0\Microsoft.NuGet.targets(198,5): error : Your project file doesn't list 'win-x86' as a "RuntimeIdentifier". You should add 'win-x86' to the "RuntimeIdentifiers" property in your project file and then re-run NuGet restore. [C:\Users\Halil Kocaoğlu\OneDrive\Masaüstü\Visual Projeler\Bozoğlan Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking\Barcoded Warehouse Stock Tracking.csproj]
+
+    0 Uyarı
+    1 Hata
+
+Geçen Süre 00:00:00.20
