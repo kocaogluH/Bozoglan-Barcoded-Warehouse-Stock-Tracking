@@ -25,6 +25,26 @@ namespace Barcoded_Warehouse_Stock_Tracking
             AutoScaleMode   = AutoScaleMode.None;   // DPI ölçeklemeyi kapat
             Font            = new Font("Segoe UI", 9f);
 
+            try
+            {
+                string exe = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
+                string proj = System.IO.Path.GetFullPath(System.IO.Path.Combine(exe, "..", ".."));
+                foreach (var p in new[]
+                {
+                    System.IO.Path.Combine(proj, "app_logo.ico"),
+                    System.IO.Path.Combine(exe, "app_logo.ico"),
+                    System.IO.Path.Combine(exe, "Resources", "app_logo.ico")
+                })
+                {
+                    if (System.IO.File.Exists(p))
+                    {
+                        this.Icon = new Icon(p);
+                        break;
+                    }
+                }
+            }
+            catch { }
+
             // Form: 460 × 660 (sabit, DPI bağımsız)
             ClientSize = new Size(460, 660);
 
