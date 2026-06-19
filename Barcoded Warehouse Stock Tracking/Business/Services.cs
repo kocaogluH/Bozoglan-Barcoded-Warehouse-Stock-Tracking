@@ -55,9 +55,9 @@ namespace Barcoded_Warehouse_Stock_Tracking.Business
             return _repository.Find(p => p.IsActive == 1 && (p.Barcode.ToLower().Contains(term) || p.Name.ToLower().Contains(term))).ToList();
         }
         
-        public int GetLowStockCount(int threshold)
+        public int GetLowStockCount()
         {
-             return _repository.Find(p => p.IsActive == 1 && p.StockQty < threshold).Count();
+             return _repository.Find(p => p.IsActive == 1 && p.StockQty < p.CriticalStock).Count();
         }
     }
 

@@ -40,6 +40,14 @@ namespace Barcoded_Warehouse_Stock_Tracking
         private readonly List<Guna2Button> _navButtons = new List<Guna2Button>();
         private Guna2Button _navReports;
 
+        // Zücaciye Özelleştirme Alanları
+        private Guna2ComboBox cmbCategory;
+        private Guna2ComboBox cmbMaterial;
+        private Guna2TextBox txtShelfLocation;
+        private NumericUpDown nudBoxQty;
+        private NumericUpDown nudCriticalStock;
+        private Guna2ComboBox cmbReason;
+
         public Form1()
         {
             InitializeComponent();
@@ -66,6 +74,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             SetupRoleAccess();
             InitializeDashboardCards();
             SetupModernShell();
+            InitializeGlasswareControls();
             InitializeContextMenu();
 
             // Veritabanı değiştikçe tüm UI'ı yenile (Satış, İade vb.)
@@ -632,7 +641,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             {
                 dgvProducts.DataSource = _productService.GetAllActiveProducts()
                     .OrderBy(p => p.Id)
-                    .Select(p => new { No = p.Id, Barkod = p.Barcode, Urun = p.Name, Fiyat = p.UnitPrice, Stok = p.StockQty })
+                    .Select(p => new { No = p.Id, Barkod = p.Barcode, Urun = p.Name, Kategori = p.Category, Malzeme = p.Material, Raf = p.ShelfLocation, Koli = p.BoxQty, Kritik = p.CriticalStock, Fiyat = p.UnitPrice, Stok = p.StockQty })
                     .ToList();
             }
             else
@@ -640,7 +649,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 var filtered = _productService.SearchProducts(term);
                 dgvProducts.DataSource = filtered
                     .OrderBy(p => p.Id)
-                    .Select(p => new { No = p.Id, Barkod = p.Barcode, Urun = p.Name, Fiyat = p.UnitPrice, Stok = p.StockQty })
+                    .Select(p => new { No = p.Id, Barkod = p.Barcode, Urun = p.Name, Kategori = p.Category, Malzeme = p.Material, Raf = p.ShelfLocation, Koli = p.BoxQty, Kritik = p.CriticalStock, Fiyat = p.UnitPrice, Stok = p.StockQty })
                     .ToList();
 
                 var exact = _productService.GetProductByBarcode(term);
@@ -648,6 +657,21 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 {
                     txtName.Text = exact.Name;
                     txtPrice.Text = exact.UnitPrice.ToString("0.00");
+
+                    // Zücaciye alanlarının yüklenmesi
+                    if (cmbCategory != null)
+                    {
+                        if (cmbCategory.Items.Contains(exact.Category)) cmbCategory.SelectedItem = exact.Category;
+                        else cmbCategory.SelectedIndex = 0;
+                    }
+                    if (cmbMaterial != null)
+                    {
+                        if (cmbMaterial.Items.Contains(exact.Material)) cmbMaterial.SelectedItem = exact.Material;
+                        else cmbMaterial.SelectedIndex = 0;
+                    }
+                    if (txtShelfLocation != null) txtShelfLocation.Text = exact.ShelfLocation ?? "";
+                    if (nudBoxQty != null) nudBoxQty.Value = exact.BoxQty > 0 ? exact.BoxQty : 1;
+                    if (nudCriticalStock != null) nudCriticalStock.Value = exact.CriticalStock >= 0 ? exact.CriticalStock : 5;
                 }
             }
         }
@@ -657,7 +681,12 @@ namespace Barcoded_Warehouse_Stock_Tracking
             if (dgvProducts.Rows[e.RowIndex].Cells["Stok"].Value != null)
             {
                 int stock = Convert.ToInt32(dgvProducts.Rows[e.RowIndex].Cells["Stok"].Value);
-                if (stock < 5)
+                int critical = 5;
+                if (dgvProducts.Rows[e.RowIndex].Cells["Kritik"].Value != null)
+                {
+                    critical = Convert.ToInt32(dgvProducts.Rows[e.RowIndex].Cells["Kritik"].Value);
+                }
+                if (stock < critical)
                 {
                     dgvProducts.Rows[e.RowIndex].DefaultCellStyle.BackColor = UiTheme.DangerSoft;
                     dgvProducts.Rows[e.RowIndex].DefaultCellStyle.ForeColor = UiTheme.Danger;
@@ -686,7 +715,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             // DataGridView güncellemesi
             dgvProducts.DataSource = _productService.GetAllActiveProducts()
                 .OrderBy(p => p.Id)
-                .Select(p => new { No = p.Id, Barkod = p.Barcode, Urun = p.Name, Fiyat = p.UnitPrice, Stok = p.StockQty })
+                .Select(p => new { No = p.Id, Barkod = p.Barcode, Urun = p.Name, Kategori = p.Category, Malzeme = p.Material, Raf = p.ShelfLocation, Koli = p.BoxQty, Kritik = p.CriticalStock, Fiyat = p.UnitPrice, Stok = p.StockQty })
                 .ToList();
             
             dgvMovements.DataSource = _context.StockMovements
@@ -713,7 +742,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             
             if (lblLowStockVal != null) 
             {
-                var lowStockProducts = _productService.GetAllActiveProducts().Where(p => p.StockQty < 5).ToList();
+                var lowStockProducts = _productService.GetAllActiveProducts().Where(p => p.StockQty < p.CriticalStock).ToList();
                 int lStock = lowStockProducts.Count;
                 if (lStock > 0)
                 {
@@ -760,23 +789,52 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 return;
             }
 
+            string category = cmbCategory != null ? (cmbCategory.SelectedItem?.ToString() ?? "") : "";
+            string material = cmbMaterial != null ? (cmbMaterial.SelectedItem?.ToString() ?? "") : "";
+            string shelfLocation = txtShelfLocation != null ? txtShelfLocation.Text.Trim() : "";
+            int boxQty = nudBoxQty != null ? (int)nudBoxQty.Value : 1;
+            int criticalStock = nudCriticalStock != null ? (int)nudCriticalStock.Value : 5;
+
             var existingProduct = _productService.GetProductByBarcode(barcode);
             if (existingProduct != null)
             {
                 existingProduct.Name = name;
                 existingProduct.UnitPrice = (double)price;
+                existingProduct.Category = category;
+                existingProduct.Material = material;
+                existingProduct.ShelfLocation = shelfLocation;
+                existingProduct.BoxQty = boxQty;
+                existingProduct.CriticalStock = criticalStock;
+
                 _productService.UpdateProduct(existingProduct);
-                MessageBox.Show("Mevcut ürün sistemde bulundu ve isim/fiyat bilgileri başarıyla güncellendi!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Mevcut ürün sistemde bulundu ve bilgileri başarıyla güncellendi!", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 RefreshAll();
+                
                 txtBarcode.Clear();
                 txtName.Clear();
                 txtPrice.Clear();
                 if (txtInitialStock != null) txtInitialStock.Clear();
+                if (txtShelfLocation != null) txtShelfLocation.Clear();
+                if (cmbCategory != null) cmbCategory.SelectedIndex = 0;
+                if (cmbMaterial != null) cmbMaterial.SelectedIndex = 0;
+                if (nudBoxQty != null) nudBoxQty.Value = 1;
+                if (nudCriticalStock != null) nudCriticalStock.Value = 5;
+
                 txtBarcode.Focus();
                 return;
             }
 
-            var p = new Product { Barcode = barcode, Name = name, UnitPrice = (double)price };
+            var p = new Product 
+            { 
+                Barcode = barcode, 
+                Name = name, 
+                UnitPrice = (double)price,
+                Category = category,
+                Material = material,
+                ShelfLocation = shelfLocation,
+                BoxQty = boxQty,
+                CriticalStock = criticalStock
+            };
             _productService.AddProduct(p);
             
             // Eğer başlangıç stoğu girilmişse, otomatik hareket ekle
@@ -805,6 +863,12 @@ namespace Barcoded_Warehouse_Stock_Tracking
             txtName.Clear();
             txtPrice.Clear();
             if (txtInitialStock != null) txtInitialStock.Clear();
+            if (txtShelfLocation != null) txtShelfLocation.Clear();
+            if (cmbCategory != null) cmbCategory.SelectedIndex = 0;
+            if (cmbMaterial != null) cmbMaterial.SelectedIndex = 0;
+            if (nudBoxQty != null) nudBoxQty.Value = 1;
+            if (nudCriticalStock != null) nudCriticalStock.Value = 5;
+            
             RefreshAll();
             txtBarcode.Focus();
 
@@ -854,8 +918,8 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
             _productService.UpdateProduct(prod);
 
-            // Çıkış hareketlerinde miktar negatif saklanır (POS satışlarıyla tutarlı)
             int storedQty = (type == "Çıkış") ? -qty : qty;
+            string reason = cmbReason != null ? (cmbReason.SelectedItem?.ToString() ?? ("Manuel " + type)) : ("Manuel " + type);
 
             _context.StockMovements.Add(new StockMovement
             {
@@ -863,7 +927,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 BarcodeSnapshot  = barcode,
                 Quantity         = storedQty,
                 Type             = type,
-                Reason           = "Manuel " + type,
+                Reason           = reason,
                 RefType          = "Manual",
                 CreatedAt        = DateTime.Now,
                 CreatedByUserId  = Session.UserId
@@ -872,11 +936,12 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
             // Log ekleme
             var ls = new LogService(_context);
-            ls.Info("Stok Hareketi: " + type, $"Barkod: {barcode}, Miktar: {qty}", Session.UserId);
+            ls.Info("Stok Hareketi: " + type, $"Barkod: {barcode}, Miktar: {qty}, Neden: {reason}", Session.UserId);
 
             RefreshAll();
             txtBarcodeMovement.Clear();
             nudQuantity.Value = 1;
+            if (cmbReason != null) cmbReason.SelectedIndex = 4;
             txtBarcodeMovement.Focus();
         }
 
@@ -911,5 +976,207 @@ namespace Barcoded_Warehouse_Stock_Tracking
                 System.Diagnostics.Debug.WriteLine("Startup update check failed: " + ex.Message);
             }
         }
+
+        private void InitializeGlasswareControls()
+        {
+            // ─────────────────────────────────────────────────────────────────
+            // Ürünler Sekmesi — Zücaciye Alanları (mevcut alanların SAĞ sütunu)
+            // Mevcut sol sütun: X=18(label) / X=110(input), genişlik=260 → bitiş ~370
+            // Yeni sağ sütun:  X=420(label) / X=520(input), genişlik=200
+            // ─────────────────────────────────────────────────────────────────
+
+            // ── Bölüm başlığı ──
+            var lblGlassSection = new Label
+            {
+                Text = "── Zücaciye Detayları ──",
+                Font = new System.Drawing.Font("Segoe UI", 8.5F, FontStyle.Bold),
+                ForeColor = UiTheme.Primary,
+                Location = new Point(420, 6),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+
+            // ── Kategori ──
+            var lblCategory = new Label
+            {
+                Text = "Kategori:",
+                Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold),
+                ForeColor = UiTheme.TextMuted,
+                Location = new Point(420, 28),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            cmbCategory = new Guna2ComboBox
+            {
+                Location = new Point(510, 22),
+                Size = new Size(200, 36),
+                BorderRadius = 8,
+                FillColor = UiTheme.InputFill,
+                ForeColor = UiTheme.TextPrimary,
+                BorderColor = UiTheme.InputBorder,
+                Font = new System.Drawing.Font("Segoe UI", 9.5F)
+            };
+            cmbCategory.Items.AddRange(new object[] { "Yemek Takımı", "Bardak/Kadeh", "Tencere/Tava", "Çatal Bıçak", "Dekorasyon/Aksesuar", "Diğer" });
+            cmbCategory.SelectedIndex = 0;
+
+            // ── Malzeme / Tür ──
+            var lblMaterial = new Label
+            {
+                Text = "Malzeme:",
+                Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold),
+                ForeColor = UiTheme.TextMuted,
+                Location = new Point(420, 78),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            cmbMaterial = new Guna2ComboBox
+            {
+                Location = new Point(510, 72),
+                Size = new Size(200, 36),
+                BorderRadius = 8,
+                FillColor = UiTheme.InputFill,
+                ForeColor = UiTheme.TextPrimary,
+                BorderColor = UiTheme.InputBorder,
+                Font = new System.Drawing.Font("Segoe UI", 9.5F)
+            };
+            cmbMaterial.Items.AddRange(new object[] { "Cam", "Porselen", "Seramik", "Çelik", "Ahşap", "Melamin", "Diğer" });
+            cmbMaterial.SelectedIndex = 0;
+
+            // ── Raf Konumu ──
+            var lblShelfLocation = new Label
+            {
+                Text = "Raf Konumu:",
+                Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold),
+                ForeColor = UiTheme.TextMuted,
+                Location = new Point(420, 128),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            txtShelfLocation = new Guna2TextBox
+            {
+                Location = new Point(510, 122),
+                Size = new Size(200, 36),
+                BorderRadius = 8,
+                FillColor = UiTheme.InputFill,
+                ForeColor = UiTheme.TextPrimary,
+                BorderColor = UiTheme.InputBorder,
+                Font = new System.Drawing.Font("Segoe UI", 9.5F),
+                PlaceholderText = "Örn: A-12"
+            };
+
+            // ── Koli İçi Adet ──
+            var lblBoxQty = new Label
+            {
+                Text = "Koli Adedi:",
+                Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold),
+                ForeColor = UiTheme.TextMuted,
+                Location = new Point(420, 178),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            nudBoxQty = new NumericUpDown
+            {
+                Location = new Point(510, 173),
+                Size = new Size(75, 30),
+                Font = new System.Drawing.Font("Segoe UI", 9.5F),
+                BackColor = UiTheme.InputFill,
+                ForeColor = UiTheme.TextPrimary,
+                Minimum = 1,
+                Maximum = 1000,
+                Value = 1
+            };
+
+            // ── Kritik Stok ──
+            var lblCriticalStock = new Label
+            {
+                Text = "Kritik Stok:",
+                Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold),
+                ForeColor = UiTheme.Danger,
+                Location = new Point(596, 178),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            nudCriticalStock = new NumericUpDown
+            {
+                Location = new Point(680, 173),
+                Size = new Size(65, 30),
+                Font = new System.Drawing.Font("Segoe UI", 9.5F),
+                BackColor = UiTheme.DangerSoft,
+                ForeColor = UiTheme.Danger,
+                Minimum = 0,
+                Maximum = 10000,
+                Value = 5
+            };
+
+            // Hepsini tabProducts'a ekle
+            tabProducts.Controls.Add(lblGlassSection);
+            tabProducts.Controls.Add(lblCategory);
+            tabProducts.Controls.Add(cmbCategory);
+            tabProducts.Controls.Add(lblMaterial);
+            tabProducts.Controls.Add(cmbMaterial);
+            tabProducts.Controls.Add(lblShelfLocation);
+            tabProducts.Controls.Add(txtShelfLocation);
+            tabProducts.Controls.Add(lblBoxQty);
+            tabProducts.Controls.Add(nudBoxQty);
+            tabProducts.Controls.Add(lblCriticalStock);
+            tabProducts.Controls.Add(nudCriticalStock);
+
+            // Kontrolleri en üste getir (diğer kontrollerle binişmesin diye)
+            lblGlassSection.BringToFront();
+            cmbCategory.BringToFront();
+            cmbMaterial.BringToFront();
+            txtShelfLocation.BringToFront();
+            nudBoxQty.BringToFront();
+            nudCriticalStock.BringToFront();
+
+            // ─────────────────────────────────────────────────────────────────
+            // Stok Hareketleri Sekmesi — "Neden" ComboBox'ı
+            // ─────────────────────────────────────────────────────────────────
+            if (txtBarcodeMovement != null) txtBarcodeMovement.Width = 200;
+            if (lblQuantity != null) lblQuantity.Location = new Point(325, 24);
+            if (nudQuantity != null)
+            {
+                nudQuantity.Location = new Point(380, 18);
+                nudQuantity.Width = 70;
+            }
+            if (lblType != null) lblType.Location = new Point(465, 24);
+            if (cmbType != null)
+            {
+                cmbType.Location = new Point(500, 18);
+                cmbType.Width = 95;
+            }
+
+            var lblReason = new Label
+            {
+                Text = "Neden:",
+                Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold),
+                ForeColor = UiTheme.TextMuted,
+                Location = new Point(605, 24),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            cmbReason = new Guna2ComboBox
+            {
+                Location = new Point(660, 18),
+                Size = new Size(145, 36),
+                BorderRadius = 8,
+                FillColor = UiTheme.InputFill,
+                ForeColor = UiTheme.TextPrimary,
+                BorderColor = UiTheme.InputBorder,
+                Font = new System.Drawing.Font("Segoe UI", 10F)
+            };
+            cmbReason.Items.AddRange(new object[] { "Kırık/Hasar (Zayiat)", "Satış", "Transfer", "Sayım Farkı", "Manuel Giriş/Çıkış", "Diğer" });
+            cmbReason.SelectedIndex = 4; // Manuel Giriş/Çıkış
+
+            if (btnAddMovement != null)
+            {
+                btnAddMovement.Location = new Point(815, 18);
+                btnAddMovement.Width = 180;
+            }
+
+            tabMovements.Controls.Add(lblReason);
+            tabMovements.Controls.Add(cmbReason);
+        }
+
     }
 }

@@ -64,7 +64,12 @@ CREATE TABLE IF NOT EXISTS Products (
   CostPrice REAL NOT NULL DEFAULT 0,
   VatRate REAL NOT NULL DEFAULT 0,
   StockQty INTEGER NOT NULL DEFAULT 0,
-  IsActive INTEGER NOT NULL DEFAULT 1
+  IsActive INTEGER NOT NULL DEFAULT 1,
+  Category TEXT NOT NULL DEFAULT '',
+  Material TEXT NOT NULL DEFAULT '',
+  ShelfLocation TEXT NOT NULL DEFAULT '',
+  BoxQty INTEGER NOT NULL DEFAULT 1,
+  CriticalStock INTEGER NOT NULL DEFAULT 5
 );
 
 CREATE TABLE IF NOT EXISTS StockMovements (
@@ -182,6 +187,26 @@ CREATE TABLE IF NOT EXISTS SaleReturnItems (
                     }
                 }
                 catch { /* already exists or error */ }
+
+                // migrations for Glassware personalization
+                foreach (var migration in new[] {
+                    "ALTER TABLE Products ADD COLUMN Category TEXT NOT NULL DEFAULT '';",
+                    "ALTER TABLE Products ADD COLUMN Material TEXT NOT NULL DEFAULT '';",
+                    "ALTER TABLE Products ADD COLUMN ShelfLocation TEXT NOT NULL DEFAULT '';",
+                    "ALTER TABLE Products ADD COLUMN BoxQty INTEGER NOT NULL DEFAULT 1;",
+                    "ALTER TABLE Products ADD COLUMN CriticalStock INTEGER NOT NULL DEFAULT 5;"
+                })
+                {
+                    try
+                    {
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.CommandText = migration;
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch { /* already exists or error */ }
+                }
 
                 using (var cmd = conn.CreateCommand())
                 {

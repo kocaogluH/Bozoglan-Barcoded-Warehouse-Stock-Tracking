@@ -32,6 +32,13 @@ namespace Barcoded_Warehouse_Stock_Tracking.Entities
         public double VatRate { get; set; }
         public int StockQty { get; set; }
         public int IsActive { get; set; } = 1;
+        
+        // Zücaciye Özelleştirme Alanları
+        public string Category { get; set; } = "";
+        public string Material { get; set; } = "";
+        public string ShelfLocation { get; set; } = "";
+        public int BoxQty { get; set; } = 1;
+        public int CriticalStock { get; set; } = 5;
     }
 
     public class StockMovement

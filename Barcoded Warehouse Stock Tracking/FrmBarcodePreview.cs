@@ -12,6 +12,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
         private readonly string _productName;
         private readonly string _priceText;
         private readonly Image _barcodeImage;
+        private Guna2CheckBox chkFragile;
 
         public FrmBarcodePreview(string barcode, string productName, string priceText, Image barcodeImage)
         {
@@ -22,7 +23,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
 
             // Form Ayarları
             this.Text = "Barkod Etiketi Önizleme";
-            this.Size = new Size(420, 380);
+            this.Size = new Size(420, 410); // Checkbox için boyutu büyüttük
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -99,12 +100,24 @@ namespace Barcoded_Warehouse_Stock_Tracking
             card.Controls.Add(lblInfo);
             this.Controls.Add(card);
 
+            // Kırılabilir Seçeneği (Zücaciye Özelleştirmesi)
+            chkFragile = new Guna2CheckBox
+            {
+                Text = "🍷 Kırılabilir Logosu Ekle (Hassas ürün uyarısı basar)",
+                Location = new Point(25, 285),
+                Size = new Size(370, 30),
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = UiTheme.Danger,
+                CheckedState = { BorderColor = UiTheme.Danger, FillColor = UiTheme.DangerSoft }
+            };
+            this.Controls.Add(chkFragile);
+
             // Yazdır Butonu
             var btnPrint = new Guna2Button
             {
                 Text = "🖨️  Etiketi Yazdır",
                 Size = new Size(170, 40),
-                Location = new Point(30, 295),
+                Location = new Point(30, 325), // Konumu checkbox için aşağı kaydırdık
                 BorderRadius = 8,
                 FillColor = UiTheme.Success,
                 HoverState = { FillColor = ControlPaint.Dark(UiTheme.Success, 0.08f) },
@@ -121,7 +134,7 @@ namespace Barcoded_Warehouse_Stock_Tracking
             {
                 Text = "❌  Kapat",
                 Size = new Size(170, 40),
-                Location = new Point(220, 295),
+                Location = new Point(220, 325), // Konumu checkbox için aşağı kaydırdık
                 BorderRadius = 8,
                 FillColor = UiTheme.SidebarHover,
                 HoverState = { FillColor = ControlPaint.Dark(UiTheme.SidebarHover, 0.08f) },
@@ -138,17 +151,24 @@ namespace Barcoded_Warehouse_Stock_Tracking
         {
             try
             {
+                bool isFragile = chkFragile != null && chkFragile.Checked;
                 var pd = new PrintDocument();
                 pd.PrintPage += (s, ev) =>
                 {
                     var g = ev.Graphics;
                     using (var fontTitle = new Font("Segoe UI", 12, FontStyle.Bold))
                     using (var fontSub = new Font("Segoe UI", 10, FontStyle.Regular))
+                    using (var fontFragile = new Font("Segoe UI", 8, FontStyle.Bold))
                     {
                         string infoText = $"{_productName} - {_priceText} TL";
                         g.DrawString("Poseidon Stok", fontSub, Brushes.Black, new PointF(20, 10));
                         g.DrawImage(_barcodeImage, new Rectangle(20, 30, 260, 60));
                         g.DrawString(infoText, fontTitle, Brushes.Black, new PointF(20, 95));
+                        
+                        if (isFragile)
+                        {
+                            g.DrawString("⚠️ FRAGILE / KIRILABİLİR 🍷", fontFragile, Brushes.Red, new PointF(20, 120));
+                        }
                     }
                 };
 
